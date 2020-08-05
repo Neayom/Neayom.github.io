@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Flink 源码：Checkpoint 元数据详解 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本文转载自微信公众号： fanrui一、Job 从 Checkpoint 处恢复流程概述Flink 任务从 Checkpoint 或 Savepoint 处恢复的整体流程简单概述，如下所示： 首先客户端提供 Checkpoint 或 Savepoint 的目录1、JM 从给定的目录中找到 _metadata 文件（Checkpoint 的元数据文件）2、JM 解析元数据文件，做一些校验，将信息写入">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flink 源码：Checkpoint 元数据详解">
+<meta property="og:url" content="http://yoursite.com/2020/07/18/Flink-%E6%BA%90%E7%A0%81%EF%BC%9ACheckpoint-%E5%85%83%E6%95%B0%E6%8D%AE%E8%AF%A6%E8%A7%A3/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="本文转载自微信公众号： fanrui一、Job 从 Checkpoint 处恢复流程概述Flink 任务从 Checkpoint 或 Savepoint 处恢复的整体流程简单概述，如下所示： 首先客户端提供 Checkpoint 或 Savepoint 的目录1、JM 从给定的目录中找到 _metadata 文件（Checkpoint 的元数据文件）2、JM 解析元数据文件，做一些校验，将信息写入">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-07-18T01:47:38.000Z">
+<meta property="article:modified_time" content="2020-07-18T07:46:11.273Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Flink-源码：Checkpoint-元数据详解" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/18/Flink-%E6%BA%90%E7%A0%81%EF%BC%9ACheckpoint-%E5%85%83%E6%95%B0%E6%8D%AE%E8%AF%A6%E8%A7%A3/" class="article-date">
+  <time datetime="2020-07-18T01:47:38.000Z" itemprop="datePublished">2020-07-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Flink 源码：Checkpoint 元数据详解
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="本文转载自微信公众号：-fanrui"><a href="#本文转载自微信公众号：-fanrui" class="headerlink" title="本文转载自微信公众号： fanrui"></a>本文转载自微信公众号： fanrui</h2><h2 id="一、Job-从-Checkpoint-处恢复流程概述"><a href="#一、Job-从-Checkpoint-处恢复流程概述" class="headerlink" title="一、Job 从 Checkpoint 处恢复流程概述"></a>一、Job 从 Checkpoint 处恢复流程概述</h2><p>Flink 任务从 Checkpoint 或 Savepoint 处恢复的整体流程简单概述，如下所示：</p>
+<p>首先客户端提供 Checkpoint 或 Savepoint 的目录<br>1、JM 从给定的目录中找到 _metadata 文件（Checkpoint 的元数据文件）<br>2、JM 解析元数据文件，做一些校验，将信息写入到 zk 中，然后准备从这一次 Checkpoint 中恢复任务<br>3、JM 拿到所有算子对应的 State，给各个 subtask 分配 StateHandle（状态文件句柄）<br>4、TM 启动时，也就是 StreamTask 的初始化阶段会创建 KeyedStateBackend 和 OperatorStateBackend<br>5、创建过程中就会根据 JM 分配给自己的 StateHandle 从 dfs 上恢复 State<br>6、由上述流程可知，Flink 任务从 Checkpoint 恢复不只是说 TM 去 dfs 拉状态文件即可，需要 JM 先给各个 TM 分配 State，由于牵扯到修改并发，所以 JM 端给各个 subtask 分配 State 的流程也是比较复杂的。本系列源码分析会陆续分析上述所有列出的流程，东西比较多。</p>
+<p>本文从 Checkpoint 的元数据入手开始分析，同时分析一下 JM 拿到 Checkpoint 元数据后该如何合理地给每个 subtask 分配 State，让 TM 去恢复。</p>
+<h2 id="二、-Checkpoint-元数据介绍"><a href="#二、-Checkpoint-元数据介绍" class="headerlink" title="二、 Checkpoint 元数据介绍"></a>二、 Checkpoint 元数据介绍</h2><h3 id="（一）Checkpoint-完整的元数据"><a href="#（一）Checkpoint-完整的元数据" class="headerlink" title="（一）Checkpoint 完整的元数据"></a>（一）Checkpoint 完整的元数据</h3><p>CompletedCheckpoint 封装了一次 Checkpoint 完整的元数据信息，CompletedCheckpoint 类包含的属性如下所示：</p>
+<p>public class CompletedCheckpoint implements Serializable {<br> private final JobID job;<br> private final long checkpointID;<br> private final long timestamp;<br> private final long duration;</p>
+<p> /** 本次 Checkpoint 中每个算子的 ID 及算子对应 State 信息 */<br> private final Map&lt;OperatorID, OperatorState&gt; operatorStates;<br> private final CheckpointProperties props;<br> private final Collection<MasterState> masterHookStates;<br> // Checkpoint 存储路径<br> private final CompletedCheckpointStorageLocation storageLocation;<br> // 元数据句柄<br> private final StreamStateHandle metadataHandle;<br>  // Checkpoint 目录地址<br> private final String externalPointer;<br> private transient volatile CompletedCheckpointStats.DiscardCallback discardCallback;<br>}<br>CompletedCheckpoint 类的大部分属性都是见名之意的，重要的属性就是本次 Checkpoint 中每个算子的 OperatorID 及算子对应 State 信息。再次强调源码中的 OperatorState 这个类不是 Flink 中常说的 OperatorState，而是指代 Operator 算子对应的 State 信息。</MasterState></p>
+<h3 id="（二）算子级别的元数据"><a href="#（二）算子级别的元数据" class="headerlink" title="（二）算子级别的元数据"></a>（二）算子级别的元数据</h3><p>OperatorState 类的属性如下所示：</p>
+<p>public class OperatorState implements CompositeStateHandle {<br> private final OperatorID operatorID;</p>
+<p> // checkpoint 时算子的并行度<br> private final int parallelism;</p>
+<p> // checkpoint 时算子的 maxParallelism<br> private final int maxParallelism;</p>
+<p> // 当前 Operator 算子内，每个 subtask 持有的 State 信息，<br> // 这里 map 对应的 key 为 subtaskId，value 为 subtask 对应的 State,<br> // OperatorState 表示一个 算子级别的，OperatorSubtaskState 是 subtask 级别的。<br> // 如果一个算子有 10 个并行度，那么 OperatorState 有 10 个 OperatorSubtaskState<br> private final Map&lt;Integer, OperatorSubtaskState&gt; operatorSubtaskStates;<br>}<br>OperatorState 中包含算子对应的 OperatorID，checkpoint 时算子的并行度和 maxParallelism。<br>OperatorState 中还使用一个 Map 保存当前 Operator 算子内每个 subtask 持有的 State 信息，这里 map 对应的 key 为 subtaskId，value 为 subtask 对应的 State。OperatorState 表示算子级别的 State 元数据信息，OperatorSubtaskState 表示 subtask 级别的 State 元数据信息。如果一个算子有 10 个并行度，那么<br>OperatorState 内就会包含 10 个 OperatorSubtaskState。</p>
+<h3 id="三-subtask-级别的元数据"><a href="#三-subtask-级别的元数据" class="headerlink" title="(三)subtask 级别的元数据"></a>(三)subtask 级别的元数据</h3><p>OperatorSubtaskState 类的属性如下所示：</p>
+<p>public class OperatorSubtaskState implements CompositeStateHandle {</p>
+<p> private final StateObjectCollection<OperatorStateHandle> managedOperatorState;</OperatorStateHandle></p>
+<p> private final StateObjectCollection<OperatorStateHandle> rawOperatorState;</OperatorStateHandle></p>
+<p> private final StateObjectCollection<KeyedStateHandle> managedKeyedState;</KeyedStateHandle></p>
+<p> private final StateObjectCollection<KeyedStateHandle> rawKeyedState;</KeyedStateHandle></p>
+<p> private final long stateSize;<br>}<br>OperatorSubtaskState 类的属性看起来非常明了，Managed 两种 Raw 两种，Raw 这里不关注，所以这里重点关注 Managed 下的两种 State，即：managedOperatorState 和 managedKeyedState。<br>注：1、Raw State（原始状态）<br>    2、Managed State（托管状态）：由Flink框架管理的状态<br>managedOperatorState 元数据维护在 OperatorStateHandle 中，managedKeyedState 元数据存储维护在 KeyedStateHandle 中。所以下面重点关注 OperatorStateHandle 和 KeyedStateHandle，这两部分内容较多，所以另外开了大标题。<br>这里同时留一个小疑问：OperatorSubtaskState 中维护的所有状态句柄，都是一个 Collection 集合，为什么是集合呢？稍后回答。</p>
+<h2 id="三、-OperatorStateHandle-介绍"><a href="#三、-OperatorStateHandle-介绍" class="headerlink" title="三、 OperatorStateHandle 介绍"></a>三、 OperatorStateHandle 介绍</h2><p>OperatorStateHandle 是个接口，它只有一种实现，即：OperatorStreamStateHandle。所以具体分析 OperatorStreamStateHandle。</p>
+<p>OperatorStreamStateHandle 相关源码如下所示：</p>
+<p>public class OperatorStreamStateHandle implements OperatorStateHandle {<br>  // map 中 key 是 StateName，value 是 StateMetaInfo<br> // StateMetaInfo 中封装的是当前 State 在状态文件所处的 offset 和 Mode<br> private final Map&lt;String, StateMetaInfo&gt; stateNameToPartitionOffsets;</p>
+<p> // OperatorState 状态文件句柄，可以读出状态数据<br> private final StreamStateHandle delegateStateHandle;<br>}</p>
+<p>// OperatorState 分布模式的枚举<br>enum Mode {<br> // 对应 getListState API<br> SPLIT_DISTRIBUTE,<br> // 对应 getUnionListState API<br> UNION,<br> // 对应 BroadcastState<br> BROADCAST<br>}</p>
+<p>class StateMetaInfo implements Serializable {<br>  // 当前 State 在状态文件所处的 offset 和 Mode<br> private final long[] offsets;<br>  // OperatorState 的分布模式<br> private final Mode distributionMode;<br>}</p>
+<p>OperatorStreamStateHandle 维护了 OperatorState 状态文件句柄，根据 StreamStateHandle 可以读出状态文件的数据，即当前 subtask 可以从这个文件中读取状态数据。OperatorStreamStateHandle 还维护了一个 map，map 中 key 是 StateName，value 是 StateMetaInfo。StateMetaInfo 中封装的是当前 State 在状态文件所处的 offset 和 Mode。这里有了文件和 offset，就可以读出所有 State 的状态数据了。</p>
+<p>在介绍一些 Mode 这个枚举，Mode 表示 OperatorState 分布模式的枚举，有三种类型，其中前两种 SPLIT_DISTRIBUTE 和 UNION 都对应的是 ListState，只不过恢复模式不同。</p>
+<p>SPLIT_DISTRIBUTE 表示每个 subtask 只获取一部分状态数据，即：所有 subtask 的状态加起来是一份全量的。<br>UNION 表示每个 subtask 获取一份全量的状态数据。<br>Mode 还有一种类型是 BROADCAST，对应的是 Flink 中的 BroadcastState。</p>
+<p>这里再抛出分析 OperatorSubtaskState 源码时留下的问题：OperatorSubtaskState 中维护的所有状态句柄，都是一个 Collection 集合，例如 managedOperatorState 的类型是 StateObjectCollection<OperatorStateHandle> ，为什么这里是集合而不直接是 OperatorStateHandle 呢？难道 OperatorStateHandle 不能把当前 subtask 的所有 managedOperatorState 封装起来吗？</OperatorStateHandle></p>
+<p>答：OperatorStateHandle（接口） 内维护了一个 map，保存了 Checkpoint 时当前 Operator 当前 subtask 内所有 managedOperatorState 的元数据信息。其实这里可以不用集合，一个 OperatorStateHandle 就足以保存 managedOperatorState 的元数据信息了。OperatorSubtaskState 内封装的是 OperatorStateHandle 的集合，其实 Checkpoint 生成元信息构造 OperatorSubtaskState 时，给 OperatorSubtaskState 传递的也不是 OperatorStateHandle 的集合，传递的就是一个 OperatorStateHandle。只不过 OperatorSubtaskState 构造器内将 OperatorStateHandle 封装成了集合。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/18/Flink-%E6%BA%90%E7%A0%81%EF%BC%9ACheckpoint-%E5%85%83%E6%95%B0%E6%8D%AE%E8%AF%A6%E8%A7%A3/" data-id="ckdh5ox880002tkr1ei2kgnc4" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/08/05/Flink%20Checkpoint%E6%9C%80%E6%96%B0%E7%90%86%E8%A7%A3/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Flink Checkpoint最新理解
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/07/17/Flink-%E6%BA%90%E7%A0%81%EF%BC%9A%E4%BB%8E-KeyGroup-%E5%88%B0-Rescale/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Flink 源码：从 KeyGroup 到 Rescale</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/08/05/%E6%88%91%E7%9A%84%E7%AC%AC%E4%BA%8C%E7%AF%87%E6%96%87%E7%AB%A0/">我的第二篇文章</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/05/%E4%B8%80%E5%91%A8%E7%AE%97%E6%B3%95%E6%80%BB%E7%BB%93/">一周算法总结</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/05/Hadoop%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Hadoop学习笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/05/Flink%20Checkpoint%E6%9C%80%E6%96%B0%E7%90%86%E8%A7%A3/">Flink Checkpoint最新理解</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/18/Flink-%E6%BA%90%E7%A0%81%EF%BC%9ACheckpoint-%E5%85%83%E6%95%B0%E6%8D%AE%E8%AF%A6%E8%A7%A3/">Flink 源码：Checkpoint 元数据详解</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

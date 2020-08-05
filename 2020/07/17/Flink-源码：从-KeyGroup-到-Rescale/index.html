@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Flink 源码：从 KeyGroup 到 Rescale | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本文转载自微信公众号：fanrui一、 KeyGroup、KeyGroupRange 介绍1、Flink 中 KeyedState 恢复时，是按照 KeyGroup 为最小单元恢复的，每个 KeyGroup 负责一部分 key 的数据。这里的 key 指的就是 Flink 中 keyBy 中提取的 key。2、每个 Flink 的 subtask 负责一部分相邻 KeyGroup 的数据，即一个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flink 源码：从 KeyGroup 到 Rescale">
+<meta property="og:url" content="http://yoursite.com/2020/07/17/Flink-%E6%BA%90%E7%A0%81%EF%BC%9A%E4%BB%8E-KeyGroup-%E5%88%B0-Rescale/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="本文转载自微信公众号：fanrui一、 KeyGroup、KeyGroupRange 介绍1、Flink 中 KeyedState 恢复时，是按照 KeyGroup 为最小单元恢复的，每个 KeyGroup 负责一部分 key 的数据。这里的 key 指的就是 Flink 中 keyBy 中提取的 key。2、每个 Flink 的 subtask 负责一部分相邻 KeyGroup 的数据，即一个">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-07-17T05:58:23.000Z">
+<meta property="article:modified_time" content="2020-07-17T09:18:41.328Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Flink-源码：从-KeyGroup-到-Rescale" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/17/Flink-%E6%BA%90%E7%A0%81%EF%BC%9A%E4%BB%8E-KeyGroup-%E5%88%B0-Rescale/" class="article-date">
+  <time datetime="2020-07-17T05:58:23.000Z" itemprop="datePublished">2020-07-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Flink 源码：从 KeyGroup 到 Rescale
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="本文转载自微信公众号：fanrui"><a href="#本文转载自微信公众号：fanrui" class="headerlink" title="本文转载自微信公众号：fanrui"></a>本文转载自微信公众号：fanrui</h2><h2 id="一、-KeyGroup、KeyGroupRange-介绍"><a href="#一、-KeyGroup、KeyGroupRange-介绍" class="headerlink" title="一、 KeyGroup、KeyGroupRange 介绍"></a>一、 KeyGroup、KeyGroupRange 介绍</h2><p>1、Flink 中 KeyedState 恢复时，是按照 KeyGroup 为最小单元恢复的，<br>每个 KeyGroup 负责一部分 key 的数据。<br>这里的 key 指的就是 Flink 中 keyBy 中提取的 key。<br>2、每个 Flink 的 subtask 负责一部分相邻 KeyGroup 的数据，即一个 KeyGroupRange 的数据，有个 [start ， end]（这里是闭区间）。</p>
+<h2 id="二、-maxParallelism-介绍及采坑记"><a href="#二、-maxParallelism-介绍及采坑记" class="headerlink" title="二、 maxParallelism 介绍及采坑记"></a>二、 maxParallelism 介绍及采坑记</h2><h1 id="（一）最大并行度概念"><a href="#（一）最大并行度概念" class="headerlink" title="（一）最大并行度概念"></a>（一）最大并行度概念</h1><p>maxParallelism 表示当前算子设置的 maxParallelism，而不是 Flink 任务的并行度（subtask）。maxParallelism 为 KeyGroup（个人理解subtask中的slot） 的个数。<br>当设置算子的并行度大于 maxParallelism 时，有些并行度就分配不到 KeyGroup，此时 Flink 任务是无法从 Checkpoint 处恢复的(为啥呢？)</p>
+<h1 id="（二）maxParallelism-到底是多少呢？"><a href="#（二）maxParallelism-到底是多少呢？" class="headerlink" title="（二）maxParallelism 到底是多少呢？"></a>（二）maxParallelism 到底是多少呢？</h1><p>1、如果设置了，就是设定的值。当然设置了，也需要检测合法性。如下图所示，Flink 要求 maxParallelism 应该介于 1 到 Short.MAX_VALUE 之间。<br>2、如果没有设置，则 Flink 引擎会自动通过 KeyGroupRangeAssignment 类的 computeDefaultMaxParallelism 方法计算得出，computeDefaultMaxParallelism 源码如下所示：</p>
+<p>/**根据算子的并行度计算 maxParallelism</p>
+<ul>
+<li><p>计算规则：</p>
+</li>
+<li><ol>
+<li>将算子并行度 * 1.5 后，向上取整到 2 的 n 次幂</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>跟 DEFAULT_LOWER_BOUND_MAX_PARALLELISM 相比，取 max</li>
+</ol>
+</li>
+<li><ol start="3">
+<li>跟 UPPER_BOUND_MAX_PARALLELISM 相比，取 min</li>
+</ol>
+</li>
+<li><p>/<br>public static int computeDefaultMaxParallelism(int operatorParallelism) {</p>
+<p>checkParallelismPreconditions(operatorParallelism);</p>
+<p>return Math.min(<br> Math.max(<br>   MathUtils.roundUpToPowerOfTwo(operatorParallelism + (operatorParallelism / 2)),<br>   DEFAULT_LOWER_BOUND_MAX_PARALLELISM),<br> UPPER_BOUND_MAX_PARALLELISM);<br>}<br>computeDefaultMaxParallelism 会根据算子的并行度计算 maxParallelism，计算规则：将算子并行度 * 1.5 后，向上取整到 2 的 n 次幂，同时保证计算的结果在最小值和最大值之间。</p>
+</li>
+</ul>
+<p>最小值 DEFAULT_LOWER_BOUND_MAX_PARALLELISM 是 2 的 7 次方 = 128。</p>
+<p>最大值 UPPER_BOUND_MAX_PARALLELISM 是 2 的 15 次方 = 32768。</p>
+<p>即：Flink 自动生成的 maxParallelism 介于 128 和 32768 之间。（不懂啊）<br>个人理解：最大并行度，讲究个最大！</p>
+<h1 id="（三）采坑记"><a href="#（三）采坑记" class="headerlink" title="（三）采坑记"></a>（三）采坑记</h1><p>新开发的 Job 业务数据量较小，所以初期设置的并行度也会很小。同时没有给每个 Job 主动设置 maxParallelism，根据上面的规则，Flink 自动生成的 maxParallelism 为 128，后期随着业务数据量暴涨，当 Job 的并发数调大 128 以上时，发现 Job 无法从 Checkpoint 或 Savepoint 中恢复了，这就是所谓的 “并发调不上去了”。当然可以选择不从状态恢复，选择直接启动的方式去启动任务。但是有些 Flink 任务对状态是强依赖的，即：必须从 State 中恢复，对于这样的 Job 就不好办了。</p>
+<p>所以按照开发规范，应该结合业务场景主动为每个 Job 设置合理的 maxParallelism，防止出现类似情况。</p>
+<h2 id="三、每个-key-应该分配到哪个-subtask-上运行？"><a href="#三、每个-key-应该分配到哪个-subtask-上运行？" class="headerlink" title="三、每个 key 应该分配到哪个 subtask 上运行？"></a>三、每个 key 应该分配到哪个 subtask 上运行？</h2><p>根据 key 计算其对应的 subtaskIndex，即应该分配给哪个 subtask 运行，计算过程包括以下两步，源码都在相应的 KeyGroupRangeAssignment 类中：</p>
+<p>第一步：根据 key 计算其对应哪个 KeyGroup<br>第二步：计算 KeyGroup 属于哪个并行度</p>
+<h3 id="第一步：根据-key-计算其对应哪个-KeyGroup"><a href="#第一步：根据-key-计算其对应哪个-KeyGroup" class="headerlink" title="第一步：根据 key 计算其对应哪个 KeyGroup"></a>第一步：根据 key 计算其对应哪个 KeyGroup</h3><p>computeKeyGroupForKeyHash 源码如下所示：</p>
+<p>/**</p>
+<ul>
+<li>Assigns the given key to a key-group index.</li>
+<li></li>
+<li>@param keyHash the hash of the key to assign</li>
+<li>@param maxParallelism the maximum supported parallelism, aka the number of key-groups.</li>
+<li>@return the key-group to which the given key is assigned</li>
+<li>根据 Key 的 hash 值来计算其对应的 KeyGroup 的 index</li>
+<li>/<br>public static int computeKeyGroupForKeyHash(int keyHash, int maxParallelism) {<br>return MathUtils.murmurHash(keyHash) % maxParallelism;<br>}<br>PS：这里的murmurHash没懂。可能就是一般的Hash运算吧</li>
+</ul>
+<h3 id="第二步：计算-KeyGroup-属于哪个并行度"><a href="#第二步：计算-KeyGroup-属于哪个并行度" class="headerlink" title="第二步：计算 KeyGroup 属于哪个并行度"></a>第二步：计算 KeyGroup 属于哪个并行度</h3><p>computeOperatorIndexForKeyGroup 源码如下所示：</p>
+<p>// 根据 maxParallelism、算子的并行度 parallelism 和 keyGroupId，<br>// 计算 keyGroupId 对应的 subtask 的 index<br>public static int computeOperatorIndexForKeyGroup(int maxParallelism,<br>                                                  int parallelism, int keyGroupId) {<br> return keyGroupId * parallelism / maxParallelism;<br>}<br>示例<br>假如 maxParallelism 为 50，parallelism 为 10，那么数据是如何分布的？</p>
+<p>MathUtils.murmurHash(key.hashCode()) % maxParallelism：所有 key 的 hashCode 通过 Murmurhash 对 50 求余得到的范围为 0<del>49，也就是说：总共有 keyGroupId 为 0</del>49 的这 50 个 KeyGroup。</p>
+<p>subtask 与 KeyGroupId 对应关系：</p>
+<p>0<del>4 号 KeyGroup 位于第 0 个 subtask。即：subtask0 处理 KeyGroupRange(0,4 ) 的数据<br>5</del>9 号 KeyGroup 位于第 1 个 subtask。即：subtask1 处理 KeyGroupRange(5,9 ) 的数据<br>10<del>14 号 KeyGroup 位于第 2 个 subtask。即：subtask2 处理 KeyGroupRange(10,14 ) 的数据<br>15</del>19 号 KeyGroup 位于第 3 个 subtask。即：subtask3 处理 KeyGroupRange(15,19 ) 的数据<br>。。。以此类推<br>这里我们看到了每个 subtask 对应一个 KeyGroupRange 的数据，且是闭区间。</p>
+<h2 id="maxParallelism-修改则任务不能恢复"><a href="#maxParallelism-修改则任务不能恢复" class="headerlink" title="maxParallelism 修改则任务不能恢复"></a>maxParallelism 修改则任务不能恢复</h2><p>KeyGroup 的数量为 maxParallelism，一旦 maxParallelism 变了，说明 KeyGroup 的分组完全变了，而 KeyedState 恢复是以 KeyGroup 为最小单元的，所以 maxParallelism 改变后，任务将无法恢复。在 Checkpoint 恢复过程中也会对新旧 Job 的 maxParallelism 进行检查匹配，如果某个算子的 maxParallelism 变了，则任务将不能恢复。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文主要介绍了 KeyGroup、KeyGroupRange 和 maxParallelism 的一些概念，及他们之间的关系。最后讲述了改并发的情况状态的 Rescale 流程。其实在 Flink 内部不只是状态恢复时需要用到 KeyGroup，数据 keyBy 后进行 shuffle 数据传输时也需要按照 KeyGroup 的规则来将分配数据，将数据分发到对应的 subtask 上</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/17/Flink-%E6%BA%90%E7%A0%81%EF%BC%9A%E4%BB%8E-KeyGroup-%E5%88%B0-Rescale/" data-id="ckdh5ox890003tkr17ho0cwoz" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/07/18/Flink-%E6%BA%90%E7%A0%81%EF%BC%9ACheckpoint-%E5%85%83%E6%95%B0%E6%8D%AE%E8%AF%A6%E8%A7%A3/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Flink 源码：Checkpoint 元数据详解
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/07/16/Linux%E7%AB%AF%E5%8F%A3%E5%8F%B7%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Linux端口号相关命令</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/08/05/%E6%88%91%E7%9A%84%E7%AC%AC%E4%BA%8C%E7%AF%87%E6%96%87%E7%AB%A0/">我的第二篇文章</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/05/%E4%B8%80%E5%91%A8%E7%AE%97%E6%B3%95%E6%80%BB%E7%BB%93/">一周算法总结</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/05/Hadoop%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Hadoop学习笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/05/Flink%20Checkpoint%E6%9C%80%E6%96%B0%E7%90%86%E8%A7%A3/">Flink Checkpoint最新理解</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/18/Flink-%E6%BA%90%E7%A0%81%EF%BC%9ACheckpoint-%E5%85%83%E6%95%B0%E6%8D%AE%E8%AF%A6%E8%A7%A3/">Flink 源码：Checkpoint 元数据详解</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

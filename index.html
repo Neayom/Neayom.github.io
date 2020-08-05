@@ -64,6 +64,541 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-我的第二篇文章" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/08/05/%E6%88%91%E7%9A%84%E7%AC%AC%E4%BA%8C%E7%AF%87%E6%96%87%E7%AB%A0/" class="article-date">
+  <time datetime="2020-08-05T09:10:05.000Z" itemprop="datePublished">2020-08-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/08/05/%E6%88%91%E7%9A%84%E7%AC%AC%E4%BA%8C%E7%AF%87%E6%96%87%E7%AB%A0/">我的第二篇文章</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>第一题、给定一个整数数组 nums 和一个目标值 target，请你在该数组中找出和为目标值的那 两个 整数，并返回他们的数组下标。<br>你可以假设每种输入只会对应一个答案。但是，数组中同一个元素不能使用两遍。<br>给定 nums = [2, 7, 11, 15], target = 9</p>
+<p>因为 nums[0] + nums[1] = 2 + 7 = 9<br>所以返回 [0, 1]</p>
+<p>解法一：暴力解法：双循环遍历，时间复杂度为O(n)<br>解法二：查看target-nums[i]的结果是否在HashMap中，在的话就返回对应map的下标和当前下标（i）<br>不在hashMap中则map.put(nums[i],i);<br>时间复杂度为O(1)</p>
+<p>第二题、整数反转<br>给出一个 32 位的有符号整数，你需要将这个整数中每位上的数字进行反转。</p>
+<p>示例 1:<br>输入: 123<br>输出: 321</p>
+<p>示例 2:<br>输入: -123<br>输出: -321</p>
+<p>示例 3:<br>输入: 120<br>输出: 21<br>解法一：字符串反转：用到了StringBuffer(String s).resverse.toString<br>注意的点是如果为负数，需要提前判断，s = s.subString(1)开始<br>解法二：这里复习下基本数据类型的取值范围<br>1、<br>基本类型：short 二进制位数：16<br>包装类：java.lang.Short<br>最小值：Short.MIN_VALUE=-32768 （-2的15此方）<br>最大值：Short.MAX_VALUE=32767 （2的15次方-1）<br>2、<br>基本类型：int 二进制位数：32<br>包装类：java.lang.Integer<br>最小值：Integer.MIN_VALUE= -2147483648 （-2的31次方）<br>最大值：Integer.MAX_VALUE= 2147483647  （2的31次方-1）<br>3、<br>基本类型：long 二进制位数：64<br>包装类：java.lang.Long<br>最小值：Long.MIN_VALUE=-9223372036854775808 （-2的63次方）<br>最大值：Long.MAX_VALUE=9223372036854775807 （2的63次方-1）<br>4、<br>基本类型：float 二进制位数：32<br>包装类：java.lang.Float<br>最小值：Float.MIN_VALUE=1.4E-45 （2的-149次方）<br>最大值：Float.MAX_VALUE=3.4028235E38 （2的128次方-1）<br>5、<br>基本类型：double 二进制位数：64<br>包装类：java.lang.Double<br>最小值：Double.MIN_VALUE=4.9E-324 （2的-1074次方）<br>最大值：Double.MAX_VALUE=1.7976931348623157E308 （2的1024次方-1）<br>给数字做反转的方法<br>res=0;<br>while(a!=0)<br>a =num%10<br>num/10<br>res=res*10+a;<br>需要判断res的范围（1）可以先指定res为long类型，这时只需要使得res&lt;=Integer.MAX_VALUE以及res&lt;=Integer.MIN_VALUE即可</p>
+<p>第三题 回文数<br>例如：反转是自己的数字就为回文数 121 1221<br>解法一：字符串反转<br>解法二：while(a!=0)<br>a =num%10<br>num/10<br>res=res*10+a;看看是否和判断的数字相等？<br>注意！！！！：输入的数字需要再int一个数字进行替代，不然最后判断的时候不成立。</p>
+<p>第四题 罗马数字转整数<br>解法：需要注意的点是，IV是4 IX是9，他们比直接加或者减少了2，需要在结果上-2.</p>
+<p>第五题：最长公共子串<br>写一个函数来查找字符串数组中的最长公共前缀。</p>
+<p>如果不存在公共前缀，返回空字符串 “”。</p>
+<p>示例 1:</p>
+<p>输入: [“flower”,”flow”,”flight”]<br>输出: “fl”<br>示例 2:</p>
+<p>输入: [“dog”,”racecar”,”car”]<br>输出: “”<br>解释: 输入不存在公共前缀。</p>
+<p>解法：先找出[“flower”,”flow”,”flight”]中的最小的字符串以及其size，是flow(minString)<br>然后遍历，如果剩下的字符串的startsWith(minString),那么就返回minString<br>否则：minString就应该减少一位，如 flow变成flo ，使用subString（0，index），这里的话就是index-1.<br>在index&gt;0的情况下进行循环操作，在while结束时startWith（minString）还是false的话则不存在公共前缀。</p>
+<p>第六题：判断子序列<br>给定字符串 s 和 t ，判断 s 是否为 t 的子序列。</p>
+<p>你可以认为 s 和 t 中仅包含英文小写字母。字符串 t 可能会很长（长度 ~= 500,000），而 s 是个短字符串（长度 &lt;=100）。</p>
+<p>字符串的一个子序列是原始字符串删除一些（也可以不删除）字符而不改变剩余字符相对位置形成的新字符串。（例如，”ace”是”abcde”的一个子序列，而”aec”不是）。</p>
+<p>示例 1:<br>s = “abc”, t = “ahbgdc”</p>
+<p>返回 true.</p>
+<p>示例 2:<br>s = “axc”, t = “ahbgdc”</p>
+<p>返回 false</p>
+<p>解法：首先while循环的条件是j的长度不能长于j，<br>然后从0位置开始循环遍历s字符串和t字符串，如果s的子字符中有和t的相等的，那么就i就加1遍历下一个<br>否则i不加，j往下加，继续找。</p>
+<p>循环结束后，如果是正确的话，i的大小应该等于s的长度。否则为false。</p>
+<p>第七题：有效的括号（String s）<br>示例 1:</p>
+<p>输入: “()”<br>输出: true<br>示例 2:</p>
+<p>输入: “()[]{}”<br>输出: true<br>示例 3:</p>
+<p>输入: “(]”<br>输出: false<br>示例 4:</p>
+<p>输入: “([)]”<br>输出: false<br>示例 5:</p>
+<p>输入: “{[]}”<br>输出: true<br>注意这个实例5.<br>这道题用到了辅助栈。注意是辅助栈，并不是真正的栈。<br>首先将正确的对应存入map中，如put{‘(‘,’)’}<br>接下来是做一些判断，<br>1、如果s的长度为奇数，那么肯定为false<br>2、如果s中存储的第一个不是map中的元素的话，肯定为false<br>开始算法的思路：<br>开始循环：<br>如果为 map的key （如’（’） 那么就将他存入栈中，如果不是key而是value如（’]’）那么就将当前栈顶的元素出栈并且取出其对应的value（栈中只保存了key）<br>看是否对应当前的字符，如果不对应那么返回fasle<br>循环结束后，如果为true 那么栈应该为空，全都出栈了，不为空则为false（想一下可能是”（（”这种情况）</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/08/05/%E6%88%91%E7%9A%84%E7%AC%AC%E4%BA%8C%E7%AF%87%E6%96%87%E7%AB%A0/" data-id="ckdh5ox8v0009tkr1c2ucaod6" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-一周算法总结" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/08/05/%E4%B8%80%E5%91%A8%E7%AE%97%E6%B3%95%E6%80%BB%E7%BB%93/" class="article-date">
+  <time datetime="2020-08-05T08:36:42.194Z" itemprop="datePublished">2020-08-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/08/05/%E4%B8%80%E5%91%A8%E7%AE%97%E6%B3%95%E6%80%BB%E7%BB%93/">一周算法总结</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>第一题、给定一个整数数组 nums 和一个目标值 target，请你在该数组中找出和为目标值的那 两个 整数，并返回他们的数组下标。<br>你可以假设每种输入只会对应一个答案。但是，数组中同一个元素不能使用两遍。<br>给定 nums = [2, 7, 11, 15], target = 9</p>
+<p>因为 nums[0] + nums[1] = 2 + 7 = 9<br>所以返回 [0, 1]</p>
+<p>解法一：暴力解法：双循环遍历，时间复杂度为O(n)<br>解法二：查看target-nums[i]的结果是否在HashMap中，在的话就返回对应map的下标和当前下标（i）<br>不在hashMap中则map.put(nums[i],i);<br>时间复杂度为O(1)</p>
+<p>第二题、整数反转<br>给出一个 32 位的有符号整数，你需要将这个整数中每位上的数字进行反转。</p>
+<p>示例 1:<br>输入: 123<br>输出: 321</p>
+<p>示例 2:<br>输入: -123<br>输出: -321</p>
+<p>示例 3:<br>输入: 120<br>输出: 21<br>解法一：字符串反转：用到了StringBuffer(String s).resverse.toString<br>注意的点是如果为负数，需要提前判断，s = s.subString(1)开始<br>解法二：这里复习下基本数据类型的取值范围<br>1、<br>基本类型：short 二进制位数：16<br>包装类：java.lang.Short<br>最小值：Short.MIN_VALUE=-32768 （-2的15此方）<br>最大值：Short.MAX_VALUE=32767 （2的15次方-1）<br>2、<br>基本类型：int 二进制位数：32<br>包装类：java.lang.Integer<br>最小值：Integer.MIN_VALUE= -2147483648 （-2的31次方）<br>最大值：Integer.MAX_VALUE= 2147483647  （2的31次方-1）<br>3、<br>基本类型：long 二进制位数：64<br>包装类：java.lang.Long<br>最小值：Long.MIN_VALUE=-9223372036854775808 （-2的63次方）<br>最大值：Long.MAX_VALUE=9223372036854775807 （2的63次方-1）<br>4、<br>基本类型：float 二进制位数：32<br>包装类：java.lang.Float<br>最小值：Float.MIN_VALUE=1.4E-45 （2的-149次方）<br>最大值：Float.MAX_VALUE=3.4028235E38 （2的128次方-1）<br>5、<br>基本类型：double 二进制位数：64<br>包装类：java.lang.Double<br>最小值：Double.MIN_VALUE=4.9E-324 （2的-1074次方）<br>最大值：Double.MAX_VALUE=1.7976931348623157E308 （2的1024次方-1）<br>给数字做反转的方法<br>res=0;<br>while(a!=0)<br>a =num%10<br>num/10<br>res=res*10+a;<br>需要判断res的范围（1）可以先指定res为long类型，这时只需要使得res&lt;=Integer.MAX_VALUE以及res&lt;=Integer.MIN_VALUE即可</p>
+<p>第三题 回文数<br>例如：反转是自己的数字就为回文数 121 1221<br>解法一：字符串反转<br>解法二：while(a!=0)<br>a =num%10<br>num/10<br>res=res*10+a;看看是否和判断的数字相等？<br>注意！！！！：输入的数字需要再int一个数字进行替代，不然最后判断的时候不成立。</p>
+<p>第四题 罗马数字转整数<br>解法：需要注意的点是，IV是4 IX是9，他们比直接加或者减少了2，需要在结果上-2.</p>
+<p>第五题：最长公共子串<br>写一个函数来查找字符串数组中的最长公共前缀。</p>
+<p>如果不存在公共前缀，返回空字符串 “”。</p>
+<p>示例 1:</p>
+<p>输入: [“flower”,”flow”,”flight”]<br>输出: “fl”<br>示例 2:</p>
+<p>输入: [“dog”,”racecar”,”car”]<br>输出: “”<br>解释: 输入不存在公共前缀。</p>
+<p>解法：先找出[“flower”,”flow”,”flight”]中的最小的字符串以及其size，是flow(minString)<br>然后遍历，如果剩下的字符串的startsWith(minString),那么就返回minString<br>否则：minString就应该减少一位，如 flow变成flo ，使用subString（0，index），这里的话就是index-1.<br>在index&gt;0的情况下进行循环操作，在while结束时startWith（minString）还是false的话则不存在公共前缀。</p>
+<p>第六题：判断子序列<br>给定字符串 s 和 t ，判断 s 是否为 t 的子序列。</p>
+<p>你可以认为 s 和 t 中仅包含英文小写字母。字符串 t 可能会很长（长度 ~= 500,000），而 s 是个短字符串（长度 &lt;=100）。</p>
+<p>字符串的一个子序列是原始字符串删除一些（也可以不删除）字符而不改变剩余字符相对位置形成的新字符串。（例如，”ace”是”abcde”的一个子序列，而”aec”不是）。</p>
+<p>示例 1:<br>s = “abc”, t = “ahbgdc”</p>
+<p>返回 true.</p>
+<p>示例 2:<br>s = “axc”, t = “ahbgdc”</p>
+<p>返回 false</p>
+<p>解法：首先while循环的条件是j的长度不能长于j，<br>然后从0位置开始循环遍历s字符串和t字符串，如果s的子字符中有和t的相等的，那么就i就加1遍历下一个<br>否则i不加，j往下加，继续找。</p>
+<p>循环结束后，如果是正确的话，i的大小应该等于s的长度。否则为false。</p>
+<p>第七题：有效的括号（String s）<br>示例 1:</p>
+<p>输入: “()”<br>输出: true<br>示例 2:</p>
+<p>输入: “()[]{}”<br>输出: true<br>示例 3:</p>
+<p>输入: “(]”<br>输出: false<br>示例 4:</p>
+<p>输入: “([)]”<br>输出: false<br>示例 5:</p>
+<p>输入: “{[]}”<br>输出: true<br>注意这个实例5.<br>这道题用到了辅助栈。注意是辅助栈，并不是真正的栈。<br>首先将正确的对应存入map中，如put{‘(‘,’)’}<br>接下来是做一些判断，<br>1、如果s的长度为奇数，那么肯定为false<br>2、如果s中存储的第一个不是map中的元素的话，肯定为false<br>开始算法的思路：<br>开始循环：<br>如果为 map的key （如’（’） 那么就将他存入栈中，如果不是key而是value如（’]’）那么就将当前栈顶的元素出栈并且取出其对应的value（栈中只保存了key）<br>看是否对应当前的字符，如果不对应那么返回fasle<br>循环结束后，如果为true 那么栈应该为空，全都出栈了，不为空则为false（想一下可能是”（（”这种情况）</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/08/05/%E4%B8%80%E5%91%A8%E7%AE%97%E6%B3%95%E6%80%BB%E7%BB%93/" data-id="ckdh5ox8d0007tkr189qshncy" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Hadoop学习笔记" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/08/05/Hadoop%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="article-date">
+  <time datetime="2020-08-05T08:33:47.844Z" itemprop="datePublished">2020-08-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/08/05/Hadoop%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Hadoop学习笔记</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>第一天：<br>多线程没用的时候就必须多进程了<br>多进程共享数据就必须涉及很多问题（网络通信）<br>但是业务逻辑却很简单<br>代价高！！！</p>
+<p>hadoop是个平台<br>搜索引擎工作原理：爬虫（网络I/O）-&gt;海量数据的存储-&gt;搜索（数据分析）-&gt;lucene-&gt;索引库</p>
+<p>hadoop擅长日志分析（海量离线数据）<br>           监控系统</p>
+<p>第二天<br>很多个节点叫做DataNode，又很多<br>文件往里面存，会将文件切成一个一个的块，分散的存储到集群里面。<br>每一个块在集群里面可以存多个副本（解决服务器故障导致的数据丢失）<br>客户端不会知道具体访问哪个块，而是指定目录名<br>所以文件之间有映射关系（Namenode）：负责把HDFS中文件抽象的路径映射到具体的哪一台机器上（block块）<br>所以客户端不管是读或者写，都先得访问Namenode</p>
+<p>怎么计算海量数据的计算：并非的进行<br>阶段1：Map阶段对本地局部进行处理，并发执行<br>阶段2：Reduce阶段只在一台机器（节点）上运行，通过网络将map的中间结果取出来，再汇总下。<br>将计算过程并发化了。<br>reduce：分组统计：按月份（12个reduce）reduce又可以并发进行了。</p>
+<p>第三天<br>1、zxvf<br>z:gz格式 x：解压 v：显示进度 f：对应哪个文件<br>2、hadoop文件下：sbin：系统的一些脚本  etc：配置文件  lib：本地jar包<br>share：doc可以删除<br>3、关闭防火墙：hadoop就是内网使用的<br>sudo service iptables stop<br>/usr/local/hadoop/tmp/dfs/name/current/fsimage_0000000000000003410是元数据HDFS    里面的某一个目录<br>namenode就是管理元数据的，元数据是HDFS里面的某一个目录，某一个文件，对应的有哪些切块，那些切块分别在哪些datanode上面，这些信息的管理就是元数据。<br>start-dfs.sh:    启动hdfs：存数据，读数据<br>第四天：<br>master：50070访问HDFS页面<br>访问一个HDFS客户端：Linux向HDFS（抽象的）上传文件命令：<br>fs -put word.txt hdfs://Master:9000/<br>删除本地的word.txt是主机本地内容删除了，但是HDFS的分布式文件系统中还有。<br>word.txt被DataNode切成好几个分块不是完整的存储在DataNode所在的文件系统里面，绝不会出现在本地文件系统里面。<br>放在哪里了呢？<br>/usr/local/hadoop/tmp/dfs/name里，下载的时候从name取出来，通过HTTP协议传输<br>下载文件命令：<br>hadoop fs -get hdfs://master:9000/word.txt</p>
+<p>运行一个MapReduce程序命令：<br>hadoop jar hadoop-mapreduce-examples-2.7.1.jar pi 5 5</p>
+<p>hadoop fs –mkdir /wordcount<br>hadoop fs –mkdir /wordcount/input<br>hadoop fs –put text.txt /wordcount/input<br>/表示HDFS的根目录</p>
+<p>hadoop fs –ls /wordcount/output<br>hadoop fs –cat /wordcount/          //查看文件内容</p>
+<p>第五天hdfs<br>写：写入Hdfs中的文件被切块存储，随机存放到分布式主机里，主机是Datanode（Linux ext3 /home/hadoop/app/hadoop 2.4.2/data/dfs/data）<br>读：读取HDFS中的文件 namenode（管理元数据管理文件对应的块）通过网络取Datanode中的所有的文件信息</p>
+<p>Hdfs的工作思想：<br>一、HDFS是通过分布式集群来存储文件，为客户端提供一个便捷的访问方式，就是一个虚拟的目录结构：hdfs：//master:9000/wordcount/input/test.txt（真实的物理机上是不存在的，客户端访问只需访问虚拟目录即可，不需要知道具体的Datanode在哪里，客户端去查询去找Hadoop给封装起来了）————–&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;百度网盘<br>二、文件存储到HDFS集群中去的时候是被切分成block<br>三、文件的block存放在若干台datanode节点上<br>四、HDFS文件系统中的文件与真实的block之间有映射关系，由namenode管理。<br>五、每一个block在集群中会存储多个副本，好处是提高数据的可靠性，还可以提高访问的吞吐量与并发。</p>
+<p>第六天<br>HDFS Shell操作<br>hadoop fs讲解<br>1、HDFS的文件无法修改，因为文件已经划分为块了<br>[-appendToFile <localsrc> … <dst>] 支持追加<br>2、    [-cat [-ignoreCrc] <src> …] 查看文本内容<br>3、    [-checksum <src> …] 算文件校验和<br>4、drwxr-xr-x  d表示是文件夹  前三个：文件所属用户对该文件的权限<br>                            第二个三元组：所属组对它的权限<br>                                第三个三元：其他用户<br>5、-rw-r–r–   2 hadoop supergroup          0 2020-07-19 22:15 /word.txt  2是副本数量，配置文件配置过：      <property><br>                <name>dfs.replication</name><br>                <value>2</value><br>                      </property><br>6、    [-chown [-R] [OWNER][:[GROUP]] PATH…] 更改文件所属主与组<br>hadoop fs -chown angelababy:mygilrs /word.txt<br>说明Hadoop权限的检查是很弱的，不管用户是否存在<br>7、    [-chmod [-R] &lt;MODE[,MODE]… | OCTALMODE&gt; PATH…] 更改权限<br>hadoop fs -chmod 777 /word.txt<br>8、    [-copyFromLocal [-f] [-p] [-l] <localsrc> … <dst>] 从本地拷贝文件到HDFS中<br>hadoop fs -copyFromLocal ./core-site.xml /<br>作用与put一样<br>9、    [-copyToLocal [-p] [-ignoreCrc] [-crc] <src> … <localdst>]<br>用于与get一致<br>10、df查看磁盘空间<br>hadoop fs -df -h /<br>11、du看目录下文件的大小<br>hadoop fs -du -s -h hdfs://master:9000/</localdst></src></dst></localsrc></src></src></dst></localsrc></p>
+<p>12、hadoop fs –mkdir /aa  注意不会级联创建<br>13、hadoop fs –rm     删除文件<br>hadoop fs –rm –r 递归删除<br>14、-tail看一个文件的尾部（看日志） -f 可以实时刷新<br>注意：在业务系统里面我们是调用API来用</p>
+<p>第七天：<br>hadoop集群搭建的无密登陆配置<br>1、SSH是怎么回事<br>Hadoop集群搭建的无密登陆配置<br>Ls - a可以访问linux的隐藏文件 带点号.的是隐藏文件（.ssh）<br>流程分析</p>
+<p>第八天NN元数据管理机制<br>大量小文件会浪费元数据空间，分析元数据效率也会降低<br>1、Namenode元数据格式</p>
+<p>其中 fsimage edits是保存在磁盘中的所以不怕断电，查询也能保证速度，在内存中查询，写的话先在edits中的，断电也会有，fsimage隔一段时间也会追上去因为SN上的Checkpoint操作<br>fsimage保存了最新的元数据检查点，包含了整个HDFS文件系统的所有目录和文件的信息。对于文件来说包括了数据块描述信息、修改时间、访问时间等；对于目录来说包括修改时间、访问权限控制信息(目录所属用户，所在组)等。<br>editlog主要是在NameNode已经启动情况下对HDFS进行的各种更新操作进行记录，HDFS客户端执行所有的写操作都会被记录到editlog中。</p>
+<p>Secondary namenode的工作流程<br>1、Secondary通知Namenode切换edits文件（edits.new）<br>2、secondary从namenode获得fsimage和edits（通过http）<br>3、Secondary将fsimage载入内存，然后开始合并edits，成为fsImage.checkpoint文件<br>4、Secondary将新的fsimage发回给namenode<br>5、Namenode用新的faimage替换旧的faimage</p>
+<p>什么时候做Checkpoint<br>Fs.checkpoint.period指定两次checkpoint的最大时间间隔，默认为3600秒<br>fs.checkpoin.size规定edits文件的最大值，一旦超过这个值则强制checkpoint，默认为64M。<br>第九天<br>HADOOP非HA下，集群可能会停止服务，虽然元数据可以恢复，但是确实在修复之前不能对外提供服务。</p>
+<p>第十天<br>DataNode工作原理<br>提供真实文件数据的存储服务<br>文件块（block）最基本的存储单位，dfs.block.size去调整默认的block大小，根据数据的特点来调整<br>不满一个块的大小的话，还是会占一个元数据的大小</p>
+<p>每个block还会有副本数，hdfs-site.xml的dfs.replication属性<br>文件块存放在 ：<br>/usr/local/hadoop/tmp/dfs/data/current/BP-1231803352-192.168.0.106-1596268895233/current/finalized</p>
+<p>文本文件可以读的，压缩文件不可以读必须完整的才可以压缩<br>cat blk_1073741954 &gt;&gt;  blk_1073741953 &gt;&gt;  blk_1073741953 追加命令（cat  &gt;&gt;后的追加到前面的）</p>
+<p>Java客户端编写<br>注意：<br>1、需要添加conf中的fs.defaultFS信息，<br>2、以及在run configuration中的用户名（windows系统下）</p>
+<p>3、FileSystem是一个上层抽象类。为什么这么设计，因为hadoop文件系统和上层的别的框架是解耦和的，编程时面向抽象编程即可。<br>4、当不配置conf时，默认的conf读取的是子类中的RawLocalFileSystem，本地文件系统这个子类，当配置如下图的conf.set的时候，将会读取hdfs文件系统，即DistributedSystem，这个类认识hdfs:</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/08/05/Hadoop%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" data-id="ckdh5ox8a0004tkr16n7x7pk9" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Flink Checkpoint最新理解" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/08/05/Flink%20Checkpoint%E6%9C%80%E6%96%B0%E7%90%86%E8%A7%A3/" class="article-date">
+  <time datetime="2020-08-05T08:24:36.010Z" itemprop="datePublished">2020-08-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/08/05/Flink%20Checkpoint%E6%9C%80%E6%96%B0%E7%90%86%E8%A7%A3/">Flink Checkpoint最新理解</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>1、flink中的Checkpoint保存的是所有任务 状态 的快照。<br>这个状态是要求所有任务都处理完同一个数据之后的状态</p>
+<p>2、flink Checkpoint算法<br>基于Chandy-Lamport算法的分布式快照</p>
+<p>3、flink  checkpint重要的概念<br>barrier用于分割不同的checkpoint，对于每个任务而言，收到barrier就意味着要开始做state的保存<br>算法中需要对不同上游分区发来的barrier，进行对齐</p>
+<p>4、checkpoint的存储位置，由state backend决定<br>一般是放在远程持久化存储空间（fs或者是rocksdb）<br>jobManager会触发一次checkpint操作，会把checkpint所有任务状态的拓扑结构保存下来</p>
+<p>5、barrier和watermark类似，都可以看做一个插入数据流中的特殊数据结构<br>barrier在数据处理上跟watermark是两套机制，完全没有关系。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/08/05/Flink%20Checkpoint%E6%9C%80%E6%96%B0%E7%90%86%E8%A7%A3/" data-id="ckdh5ox7z0000tkr13he284xl" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Flink-源码：Checkpoint-元数据详解" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/18/Flink-%E6%BA%90%E7%A0%81%EF%BC%9ACheckpoint-%E5%85%83%E6%95%B0%E6%8D%AE%E8%AF%A6%E8%A7%A3/" class="article-date">
+  <time datetime="2020-07-18T01:47:38.000Z" itemprop="datePublished">2020-07-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/18/Flink-%E6%BA%90%E7%A0%81%EF%BC%9ACheckpoint-%E5%85%83%E6%95%B0%E6%8D%AE%E8%AF%A6%E8%A7%A3/">Flink 源码：Checkpoint 元数据详解</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="本文转载自微信公众号：-fanrui"><a href="#本文转载自微信公众号：-fanrui" class="headerlink" title="本文转载自微信公众号： fanrui"></a>本文转载自微信公众号： fanrui</h2><h2 id="一、Job-从-Checkpoint-处恢复流程概述"><a href="#一、Job-从-Checkpoint-处恢复流程概述" class="headerlink" title="一、Job 从 Checkpoint 处恢复流程概述"></a>一、Job 从 Checkpoint 处恢复流程概述</h2><p>Flink 任务从 Checkpoint 或 Savepoint 处恢复的整体流程简单概述，如下所示：</p>
+<p>首先客户端提供 Checkpoint 或 Savepoint 的目录<br>1、JM 从给定的目录中找到 _metadata 文件（Checkpoint 的元数据文件）<br>2、JM 解析元数据文件，做一些校验，将信息写入到 zk 中，然后准备从这一次 Checkpoint 中恢复任务<br>3、JM 拿到所有算子对应的 State，给各个 subtask 分配 StateHandle（状态文件句柄）<br>4、TM 启动时，也就是 StreamTask 的初始化阶段会创建 KeyedStateBackend 和 OperatorStateBackend<br>5、创建过程中就会根据 JM 分配给自己的 StateHandle 从 dfs 上恢复 State<br>6、由上述流程可知，Flink 任务从 Checkpoint 恢复不只是说 TM 去 dfs 拉状态文件即可，需要 JM 先给各个 TM 分配 State，由于牵扯到修改并发，所以 JM 端给各个 subtask 分配 State 的流程也是比较复杂的。本系列源码分析会陆续分析上述所有列出的流程，东西比较多。</p>
+<p>本文从 Checkpoint 的元数据入手开始分析，同时分析一下 JM 拿到 Checkpoint 元数据后该如何合理地给每个 subtask 分配 State，让 TM 去恢复。</p>
+<h2 id="二、-Checkpoint-元数据介绍"><a href="#二、-Checkpoint-元数据介绍" class="headerlink" title="二、 Checkpoint 元数据介绍"></a>二、 Checkpoint 元数据介绍</h2><h3 id="（一）Checkpoint-完整的元数据"><a href="#（一）Checkpoint-完整的元数据" class="headerlink" title="（一）Checkpoint 完整的元数据"></a>（一）Checkpoint 完整的元数据</h3><p>CompletedCheckpoint 封装了一次 Checkpoint 完整的元数据信息，CompletedCheckpoint 类包含的属性如下所示：</p>
+<p>public class CompletedCheckpoint implements Serializable {<br> private final JobID job;<br> private final long checkpointID;<br> private final long timestamp;<br> private final long duration;</p>
+<p> /** 本次 Checkpoint 中每个算子的 ID 及算子对应 State 信息 */<br> private final Map&lt;OperatorID, OperatorState&gt; operatorStates;<br> private final CheckpointProperties props;<br> private final Collection<MasterState> masterHookStates;<br> // Checkpoint 存储路径<br> private final CompletedCheckpointStorageLocation storageLocation;<br> // 元数据句柄<br> private final StreamStateHandle metadataHandle;<br>  // Checkpoint 目录地址<br> private final String externalPointer;<br> private transient volatile CompletedCheckpointStats.DiscardCallback discardCallback;<br>}<br>CompletedCheckpoint 类的大部分属性都是见名之意的，重要的属性就是本次 Checkpoint 中每个算子的 OperatorID 及算子对应 State 信息。再次强调源码中的 OperatorState 这个类不是 Flink 中常说的 OperatorState，而是指代 Operator 算子对应的 State 信息。</MasterState></p>
+<h3 id="（二）算子级别的元数据"><a href="#（二）算子级别的元数据" class="headerlink" title="（二）算子级别的元数据"></a>（二）算子级别的元数据</h3><p>OperatorState 类的属性如下所示：</p>
+<p>public class OperatorState implements CompositeStateHandle {<br> private final OperatorID operatorID;</p>
+<p> // checkpoint 时算子的并行度<br> private final int parallelism;</p>
+<p> // checkpoint 时算子的 maxParallelism<br> private final int maxParallelism;</p>
+<p> // 当前 Operator 算子内，每个 subtask 持有的 State 信息，<br> // 这里 map 对应的 key 为 subtaskId，value 为 subtask 对应的 State,<br> // OperatorState 表示一个 算子级别的，OperatorSubtaskState 是 subtask 级别的。<br> // 如果一个算子有 10 个并行度，那么 OperatorState 有 10 个 OperatorSubtaskState<br> private final Map&lt;Integer, OperatorSubtaskState&gt; operatorSubtaskStates;<br>}<br>OperatorState 中包含算子对应的 OperatorID，checkpoint 时算子的并行度和 maxParallelism。<br>OperatorState 中还使用一个 Map 保存当前 Operator 算子内每个 subtask 持有的 State 信息，这里 map 对应的 key 为 subtaskId，value 为 subtask 对应的 State。OperatorState 表示算子级别的 State 元数据信息，OperatorSubtaskState 表示 subtask 级别的 State 元数据信息。如果一个算子有 10 个并行度，那么<br>OperatorState 内就会包含 10 个 OperatorSubtaskState。</p>
+<h3 id="三-subtask-级别的元数据"><a href="#三-subtask-级别的元数据" class="headerlink" title="(三)subtask 级别的元数据"></a>(三)subtask 级别的元数据</h3><p>OperatorSubtaskState 类的属性如下所示：</p>
+<p>public class OperatorSubtaskState implements CompositeStateHandle {</p>
+<p> private final StateObjectCollection<OperatorStateHandle> managedOperatorState;</OperatorStateHandle></p>
+<p> private final StateObjectCollection<OperatorStateHandle> rawOperatorState;</OperatorStateHandle></p>
+<p> private final StateObjectCollection<KeyedStateHandle> managedKeyedState;</KeyedStateHandle></p>
+<p> private final StateObjectCollection<KeyedStateHandle> rawKeyedState;</KeyedStateHandle></p>
+<p> private final long stateSize;<br>}<br>OperatorSubtaskState 类的属性看起来非常明了，Managed 两种 Raw 两种，Raw 这里不关注，所以这里重点关注 Managed 下的两种 State，即：managedOperatorState 和 managedKeyedState。<br>注：1、Raw State（原始状态）<br>    2、Managed State（托管状态）：由Flink框架管理的状态<br>managedOperatorState 元数据维护在 OperatorStateHandle 中，managedKeyedState 元数据存储维护在 KeyedStateHandle 中。所以下面重点关注 OperatorStateHandle 和 KeyedStateHandle，这两部分内容较多，所以另外开了大标题。<br>这里同时留一个小疑问：OperatorSubtaskState 中维护的所有状态句柄，都是一个 Collection 集合，为什么是集合呢？稍后回答。</p>
+<h2 id="三、-OperatorStateHandle-介绍"><a href="#三、-OperatorStateHandle-介绍" class="headerlink" title="三、 OperatorStateHandle 介绍"></a>三、 OperatorStateHandle 介绍</h2><p>OperatorStateHandle 是个接口，它只有一种实现，即：OperatorStreamStateHandle。所以具体分析 OperatorStreamStateHandle。</p>
+<p>OperatorStreamStateHandle 相关源码如下所示：</p>
+<p>public class OperatorStreamStateHandle implements OperatorStateHandle {<br>  // map 中 key 是 StateName，value 是 StateMetaInfo<br> // StateMetaInfo 中封装的是当前 State 在状态文件所处的 offset 和 Mode<br> private final Map&lt;String, StateMetaInfo&gt; stateNameToPartitionOffsets;</p>
+<p> // OperatorState 状态文件句柄，可以读出状态数据<br> private final StreamStateHandle delegateStateHandle;<br>}</p>
+<p>// OperatorState 分布模式的枚举<br>enum Mode {<br> // 对应 getListState API<br> SPLIT_DISTRIBUTE,<br> // 对应 getUnionListState API<br> UNION,<br> // 对应 BroadcastState<br> BROADCAST<br>}</p>
+<p>class StateMetaInfo implements Serializable {<br>  // 当前 State 在状态文件所处的 offset 和 Mode<br> private final long[] offsets;<br>  // OperatorState 的分布模式<br> private final Mode distributionMode;<br>}</p>
+<p>OperatorStreamStateHandle 维护了 OperatorState 状态文件句柄，根据 StreamStateHandle 可以读出状态文件的数据，即当前 subtask 可以从这个文件中读取状态数据。OperatorStreamStateHandle 还维护了一个 map，map 中 key 是 StateName，value 是 StateMetaInfo。StateMetaInfo 中封装的是当前 State 在状态文件所处的 offset 和 Mode。这里有了文件和 offset，就可以读出所有 State 的状态数据了。</p>
+<p>在介绍一些 Mode 这个枚举，Mode 表示 OperatorState 分布模式的枚举，有三种类型，其中前两种 SPLIT_DISTRIBUTE 和 UNION 都对应的是 ListState，只不过恢复模式不同。</p>
+<p>SPLIT_DISTRIBUTE 表示每个 subtask 只获取一部分状态数据，即：所有 subtask 的状态加起来是一份全量的。<br>UNION 表示每个 subtask 获取一份全量的状态数据。<br>Mode 还有一种类型是 BROADCAST，对应的是 Flink 中的 BroadcastState。</p>
+<p>这里再抛出分析 OperatorSubtaskState 源码时留下的问题：OperatorSubtaskState 中维护的所有状态句柄，都是一个 Collection 集合，例如 managedOperatorState 的类型是 StateObjectCollection<OperatorStateHandle> ，为什么这里是集合而不直接是 OperatorStateHandle 呢？难道 OperatorStateHandle 不能把当前 subtask 的所有 managedOperatorState 封装起来吗？</OperatorStateHandle></p>
+<p>答：OperatorStateHandle（接口） 内维护了一个 map，保存了 Checkpoint 时当前 Operator 当前 subtask 内所有 managedOperatorState 的元数据信息。其实这里可以不用集合，一个 OperatorStateHandle 就足以保存 managedOperatorState 的元数据信息了。OperatorSubtaskState 内封装的是 OperatorStateHandle 的集合，其实 Checkpoint 生成元信息构造 OperatorSubtaskState 时，给 OperatorSubtaskState 传递的也不是 OperatorStateHandle 的集合，传递的就是一个 OperatorStateHandle。只不过 OperatorSubtaskState 构造器内将 OperatorStateHandle 封装成了集合。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/18/Flink-%E6%BA%90%E7%A0%81%EF%BC%9ACheckpoint-%E5%85%83%E6%95%B0%E6%8D%AE%E8%AF%A6%E8%A7%A3/" data-id="ckdh5ox880002tkr1ei2kgnc4" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Flink-源码：从-KeyGroup-到-Rescale" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/17/Flink-%E6%BA%90%E7%A0%81%EF%BC%9A%E4%BB%8E-KeyGroup-%E5%88%B0-Rescale/" class="article-date">
+  <time datetime="2020-07-17T05:58:23.000Z" itemprop="datePublished">2020-07-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/17/Flink-%E6%BA%90%E7%A0%81%EF%BC%9A%E4%BB%8E-KeyGroup-%E5%88%B0-Rescale/">Flink 源码：从 KeyGroup 到 Rescale</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="本文转载自微信公众号：fanrui"><a href="#本文转载自微信公众号：fanrui" class="headerlink" title="本文转载自微信公众号：fanrui"></a>本文转载自微信公众号：fanrui</h2><h2 id="一、-KeyGroup、KeyGroupRange-介绍"><a href="#一、-KeyGroup、KeyGroupRange-介绍" class="headerlink" title="一、 KeyGroup、KeyGroupRange 介绍"></a>一、 KeyGroup、KeyGroupRange 介绍</h2><p>1、Flink 中 KeyedState 恢复时，是按照 KeyGroup 为最小单元恢复的，<br>每个 KeyGroup 负责一部分 key 的数据。<br>这里的 key 指的就是 Flink 中 keyBy 中提取的 key。<br>2、每个 Flink 的 subtask 负责一部分相邻 KeyGroup 的数据，即一个 KeyGroupRange 的数据，有个 [start ， end]（这里是闭区间）。</p>
+<h2 id="二、-maxParallelism-介绍及采坑记"><a href="#二、-maxParallelism-介绍及采坑记" class="headerlink" title="二、 maxParallelism 介绍及采坑记"></a>二、 maxParallelism 介绍及采坑记</h2><h1 id="（一）最大并行度概念"><a href="#（一）最大并行度概念" class="headerlink" title="（一）最大并行度概念"></a>（一）最大并行度概念</h1><p>maxParallelism 表示当前算子设置的 maxParallelism，而不是 Flink 任务的并行度（subtask）。maxParallelism 为 KeyGroup（个人理解subtask中的slot） 的个数。<br>当设置算子的并行度大于 maxParallelism 时，有些并行度就分配不到 KeyGroup，此时 Flink 任务是无法从 Checkpoint 处恢复的(为啥呢？)</p>
+<h1 id="（二）maxParallelism-到底是多少呢？"><a href="#（二）maxParallelism-到底是多少呢？" class="headerlink" title="（二）maxParallelism 到底是多少呢？"></a>（二）maxParallelism 到底是多少呢？</h1><p>1、如果设置了，就是设定的值。当然设置了，也需要检测合法性。如下图所示，Flink 要求 maxParallelism 应该介于 1 到 Short.MAX_VALUE 之间。<br>2、如果没有设置，则 Flink 引擎会自动通过 KeyGroupRangeAssignment 类的 computeDefaultMaxParallelism 方法计算得出，computeDefaultMaxParallelism 源码如下所示：</p>
+<p>/**根据算子的并行度计算 maxParallelism</p>
+<ul>
+<li><p>计算规则：</p>
+</li>
+<li><ol>
+<li>将算子并行度 * 1.5 后，向上取整到 2 的 n 次幂</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>跟 DEFAULT_LOWER_BOUND_MAX_PARALLELISM 相比，取 max</li>
+</ol>
+</li>
+<li><ol start="3">
+<li>跟 UPPER_BOUND_MAX_PARALLELISM 相比，取 min</li>
+</ol>
+</li>
+<li><p>/<br>public static int computeDefaultMaxParallelism(int operatorParallelism) {</p>
+<p>checkParallelismPreconditions(operatorParallelism);</p>
+<p>return Math.min(<br> Math.max(<br>   MathUtils.roundUpToPowerOfTwo(operatorParallelism + (operatorParallelism / 2)),<br>   DEFAULT_LOWER_BOUND_MAX_PARALLELISM),<br> UPPER_BOUND_MAX_PARALLELISM);<br>}<br>computeDefaultMaxParallelism 会根据算子的并行度计算 maxParallelism，计算规则：将算子并行度 * 1.5 后，向上取整到 2 的 n 次幂，同时保证计算的结果在最小值和最大值之间。</p>
+</li>
+</ul>
+<p>最小值 DEFAULT_LOWER_BOUND_MAX_PARALLELISM 是 2 的 7 次方 = 128。</p>
+<p>最大值 UPPER_BOUND_MAX_PARALLELISM 是 2 的 15 次方 = 32768。</p>
+<p>即：Flink 自动生成的 maxParallelism 介于 128 和 32768 之间。（不懂啊）<br>个人理解：最大并行度，讲究个最大！</p>
+<h1 id="（三）采坑记"><a href="#（三）采坑记" class="headerlink" title="（三）采坑记"></a>（三）采坑记</h1><p>新开发的 Job 业务数据量较小，所以初期设置的并行度也会很小。同时没有给每个 Job 主动设置 maxParallelism，根据上面的规则，Flink 自动生成的 maxParallelism 为 128，后期随着业务数据量暴涨，当 Job 的并发数调大 128 以上时，发现 Job 无法从 Checkpoint 或 Savepoint 中恢复了，这就是所谓的 “并发调不上去了”。当然可以选择不从状态恢复，选择直接启动的方式去启动任务。但是有些 Flink 任务对状态是强依赖的，即：必须从 State 中恢复，对于这样的 Job 就不好办了。</p>
+<p>所以按照开发规范，应该结合业务场景主动为每个 Job 设置合理的 maxParallelism，防止出现类似情况。</p>
+<h2 id="三、每个-key-应该分配到哪个-subtask-上运行？"><a href="#三、每个-key-应该分配到哪个-subtask-上运行？" class="headerlink" title="三、每个 key 应该分配到哪个 subtask 上运行？"></a>三、每个 key 应该分配到哪个 subtask 上运行？</h2><p>根据 key 计算其对应的 subtaskIndex，即应该分配给哪个 subtask 运行，计算过程包括以下两步，源码都在相应的 KeyGroupRangeAssignment 类中：</p>
+<p>第一步：根据 key 计算其对应哪个 KeyGroup<br>第二步：计算 KeyGroup 属于哪个并行度</p>
+<h3 id="第一步：根据-key-计算其对应哪个-KeyGroup"><a href="#第一步：根据-key-计算其对应哪个-KeyGroup" class="headerlink" title="第一步：根据 key 计算其对应哪个 KeyGroup"></a>第一步：根据 key 计算其对应哪个 KeyGroup</h3><p>computeKeyGroupForKeyHash 源码如下所示：</p>
+<p>/**</p>
+<ul>
+<li>Assigns the given key to a key-group index.</li>
+<li></li>
+<li>@param keyHash the hash of the key to assign</li>
+<li>@param maxParallelism the maximum supported parallelism, aka the number of key-groups.</li>
+<li>@return the key-group to which the given key is assigned</li>
+<li>根据 Key 的 hash 值来计算其对应的 KeyGroup 的 index</li>
+<li>/<br>public static int computeKeyGroupForKeyHash(int keyHash, int maxParallelism) {<br>return MathUtils.murmurHash(keyHash) % maxParallelism;<br>}<br>PS：这里的murmurHash没懂。可能就是一般的Hash运算吧</li>
+</ul>
+<h3 id="第二步：计算-KeyGroup-属于哪个并行度"><a href="#第二步：计算-KeyGroup-属于哪个并行度" class="headerlink" title="第二步：计算 KeyGroup 属于哪个并行度"></a>第二步：计算 KeyGroup 属于哪个并行度</h3><p>computeOperatorIndexForKeyGroup 源码如下所示：</p>
+<p>// 根据 maxParallelism、算子的并行度 parallelism 和 keyGroupId，<br>// 计算 keyGroupId 对应的 subtask 的 index<br>public static int computeOperatorIndexForKeyGroup(int maxParallelism,<br>                                                  int parallelism, int keyGroupId) {<br> return keyGroupId * parallelism / maxParallelism;<br>}<br>示例<br>假如 maxParallelism 为 50，parallelism 为 10，那么数据是如何分布的？</p>
+<p>MathUtils.murmurHash(key.hashCode()) % maxParallelism：所有 key 的 hashCode 通过 Murmurhash 对 50 求余得到的范围为 0<del>49，也就是说：总共有 keyGroupId 为 0</del>49 的这 50 个 KeyGroup。</p>
+<p>subtask 与 KeyGroupId 对应关系：</p>
+<p>0<del>4 号 KeyGroup 位于第 0 个 subtask。即：subtask0 处理 KeyGroupRange(0,4 ) 的数据<br>5</del>9 号 KeyGroup 位于第 1 个 subtask。即：subtask1 处理 KeyGroupRange(5,9 ) 的数据<br>10<del>14 号 KeyGroup 位于第 2 个 subtask。即：subtask2 处理 KeyGroupRange(10,14 ) 的数据<br>15</del>19 号 KeyGroup 位于第 3 个 subtask。即：subtask3 处理 KeyGroupRange(15,19 ) 的数据<br>。。。以此类推<br>这里我们看到了每个 subtask 对应一个 KeyGroupRange 的数据，且是闭区间。</p>
+<h2 id="maxParallelism-修改则任务不能恢复"><a href="#maxParallelism-修改则任务不能恢复" class="headerlink" title="maxParallelism 修改则任务不能恢复"></a>maxParallelism 修改则任务不能恢复</h2><p>KeyGroup 的数量为 maxParallelism，一旦 maxParallelism 变了，说明 KeyGroup 的分组完全变了，而 KeyedState 恢复是以 KeyGroup 为最小单元的，所以 maxParallelism 改变后，任务将无法恢复。在 Checkpoint 恢复过程中也会对新旧 Job 的 maxParallelism 进行检查匹配，如果某个算子的 maxParallelism 变了，则任务将不能恢复。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文主要介绍了 KeyGroup、KeyGroupRange 和 maxParallelism 的一些概念，及他们之间的关系。最后讲述了改并发的情况状态的 Rescale 流程。其实在 Flink 内部不只是状态恢复时需要用到 KeyGroup，数据 keyBy 后进行 shuffle 数据传输时也需要按照 KeyGroup 的规则来将分配数据，将数据分发到对应的 subtask 上</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/17/Flink-%E6%BA%90%E7%A0%81%EF%BC%9A%E4%BB%8E-KeyGroup-%E5%88%B0-Rescale/" data-id="ckdh5ox890003tkr17ho0cwoz" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux端口号相关命令" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/16/Linux%E7%AB%AF%E5%8F%A3%E5%8F%B7%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4/" class="article-date">
+  <time datetime="2020-07-16T07:07:29.000Z" itemprop="datePublished">2020-07-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/16/Linux%E7%AB%AF%E5%8F%A3%E5%8F%B7%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4/">Linux端口号相关命令</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="查看当前所有tcp端口·"><a href="#查看当前所有tcp端口·" class="headerlink" title="查看当前所有tcp端口·"></a>查看当前所有tcp端口·</h2><p>netstat -ntlp   </p>
+<h2 id="查看所有80端口使用情况·"><a href="#查看所有80端口使用情况·" class="headerlink" title="查看所有80端口使用情况·"></a>查看所有80端口使用情况·</h2><p>netstat -ntulp |grep 80   </p>
+<h2 id="查看所有3306端口使用情况·"><a href="#查看所有3306端口使用情况·" class="headerlink" title="查看所有3306端口使用情况·"></a>查看所有3306端口使用情况·</h2><p>netstat -an | grep 3306   </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/16/Linux%E7%AB%AF%E5%8F%A3%E5%8F%B7%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4/" data-id="ckdh5ox8b0005tkr197ab9sj4" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Flink重启策略实验笔记" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/16/Flink%E9%87%8D%E5%90%AF%E7%AD%96%E7%95%A5%E5%AE%9E%E9%AA%8C%E7%AC%94%E8%AE%B0/" class="article-date">
+  <time datetime="2020-07-16T06:06:03.000Z" itemprop="datePublished">2020-07-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/16/Flink%E9%87%8D%E5%90%AF%E7%AD%96%E7%95%A5%E5%AE%9E%E9%AA%8C%E7%AC%94%E8%AE%B0/">Flink重启策略实验笔记</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="开始实验-以WordCount为例"><a href="#开始实验-以WordCount为例" class="headerlink" title="开始实验(以WordCount为例)"></a>开始实验(以WordCount为例)</h2><h3 id="参数解释"><a href="#参数解释" class="headerlink" title="参数解释"></a>参数解释</h3><pre><code> //每隔1秒启动一个检查点（设置checkpoint周期）
+env.enableCheckpointing(1000);
+
+//高级选项：
+//设置模式为Exactly-once（这是默认值）
+env.getCheckpointConfig().setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE);
+
+//确保检查点之间至少有0.5秒的间隔（checkpoint的间隔）
+env.getCheckpointConfig().setMinPauseBetweenCheckpoints(500);
+
+//检查点必须在1min内完成，或者被丢弃（checkpoint的超时时间）
+env.getCheckpointConfig().setCheckpointTimeout(60000);
+
+//同一时间只允许操作一个检查点
+env.getCheckpointConfig().setMaxConcurrentCheckpoints(1);
+
+//表示一旦Flink处理程序被cancel后，会保留checkpoint数据，以便根据实际需要恢复到指定的checkpoint
+env.getCheckpointConfig().enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);</code></pre><h2 id="一、状态后端为-MemoryStateBackend"><a href="#一、状态后端为-MemoryStateBackend" class="headerlink" title="一、状态后端为 MemoryStateBackend"></a>一、状态后端为 MemoryStateBackend</h2><p>env.setStateBackend(new MemoryStateBackend());</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/16/Flink%E9%87%8D%E5%90%AF%E7%AD%96%E7%95%A5%E5%AE%9E%E9%AA%8C%E7%AC%94%E8%AE%B0/" data-id="ckdh5ox8c0006tkr16xbg6hp9" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Flink-Cheakpoint-机制原理剖析与参数设计" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/16/Flink-Cheakpoint-%E6%9C%BA%E5%88%B6%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90%E4%B8%8E%E5%8F%82%E6%95%B0%E8%AE%BE%E8%AE%A1/" class="article-date">
+  <time datetime="2020-07-16T02:06:36.000Z" itemprop="datePublished">2020-07-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/16/Flink-Cheakpoint-%E6%9C%BA%E5%88%B6%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90%E4%B8%8E%E5%8F%82%E6%95%B0%E8%AE%BE%E8%AE%A1/">Flink Cheakpoint 机制原理剖析</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="本文为转载加整理"><a href="#本文为转载加整理" class="headerlink" title="本文为转载加整理"></a>本文为转载加整理</h2><p>转载信息一（写的很好）：<a href="http://www.jianshu.com/p/4d31d6cddc99" target="_blank" rel="noopener">www.jianshu.com/p/4d31d6cddc99</a><br>转载信息二：zhuanlan.zhihu.com/p/104601440</p>
+<h2 id="提出问题"><a href="#提出问题" class="headerlink" title="提出问题"></a>提出问题</h2><p>分布式系统经常出现进程被杀、节点宕机或网络中断等问题，那么本地的状态在遇到故障时如何保证不丢呢？Flink定期保存状态数据到存储上，故障发生后从之前的备份中恢复，整个被称为Checkpoint机制，它为Flink提供了Exactly-Once的投递保障。本文将介绍Flink的Checkpoint机制的原理。本文会使用多个概念：快照（Snapshot）、分布式快照（Distributed Snapshot）、检查点（Checkpoint）等，这些概念均指的是Flink的Checkpoint机制，读者可以将这些概念等同看待。</p>
+<h2 id="什么是barrier"><a href="#什么是barrier" class="headerlink" title="什么是barrier"></a>什么是barrier</h2><p>barrier从Source Task处生成，一直流到Sink Task，期间所有的Task只要碰到barrier，就会触发自身进行快照;<br>Source Task接收到JobManager的编号为chk-100的CheckPoint触发请求后，发现自己恰好接收到kafka offset（0，1000）处的数据，所以会往offset（0，1000）数据之后offset（0，1001）数据之前安插一个barrier，然后自己开始做快照，也就是将offset（0，1000）保存到状态后端chk-100中。然后barrier接着往下游发送，当统计pv的task接收到barrier后，也会暂停处理数据，将自己内存中保存的pv信息（app1，50000）（app2，10000）保存到状态后端chk-100中。OK，flink大概就是通过这个原理来保存快照的;<br>结合案例来讲就是，统计pv的task想对（app1，50000）（app2，10000）做快照，但是如果数据还在处理，可能快照还没保存下来，状态已经变成了（app1，50001）（app2，10001），快照就不准确了，就不能保障Exactly Once了;<br>Exactly Once是指故障恢复后不会出现数据重复。</p>
+<h2 id="Flink分布式快照流程"><a href="#Flink分布式快照流程" class="headerlink" title="Flink分布式快照流程"></a>Flink分布式快照流程</h2><p>首先我们来看一下一个简单的Checkpoint的大致流程：</p>
+<p>1、暂停处理新流入数据，将新数据缓存起来。<br>2、将算子子任务的本地状态数据拷贝到一个远程的持久化存储上。<br>3、继续处理新流入的数据，包括刚才缓存起来的数据。</p>
+<p>首先，Flink的检查点协调器（Checkpoint Coordinator）触发一次Checkpoint（Trigger Checkpoint），这个请求会发送给Source的各个子任务。<br>各Source算子子任务接收到这个Checkpoint请求之后，会将自己的状态写入到状态后端，生成一次快照，并且会向下游广播Checkpoint Barrier。</p>
+<p>Source算子做完快照后，还会给Checkpoint Coodinator发送一个确认，告知自己已经做完了相应的工作。这个确认中包括了一些元数据，其中就包括刚才备份到State Backend的状态句柄，或者说是指向状态的指针。至此，Source完成了一次Checkpoint。跟Watermark的传播一样，一个算子子任务要把Checkpoint Barrier发送给所连接的所有下游算子子任务</p>
+<p>对于下游算子来说，可能有多个与之相连的上游输入，我们将算子之间的边称为通道。Source要将一个ID为n的Checkpoint Barrier向所有下游算子广播，这也意味着下游算子的多个输入里都有同一个Checkpoint Barrier，而且不同输入里Checkpoint Barrier的流入进度可能不同。Checkpoint Barrier传播的过程需要进行对齐（Barrier Alignment）</p>
+<h2 id="Checkpoint-Barrier如何在算子间传播和对齐的呢？"><a href="#Checkpoint-Barrier如何在算子间传播和对齐的呢？" class="headerlink" title="Checkpoint Barrier如何在算子间传播和对齐的呢？"></a>Checkpoint Barrier如何在算子间传播和对齐的呢？</h2><p>1、算子子任务在某个输入通道中收到第一个ID为n的Checkpoint Barrier，但是其他输入通道中ID为n的Checkpoint Barrier还未到达，该算子子任务开始准备进行对齐。<br>2、算子子任务将第一个输入通道的数据缓存下来，同时继续处理其他输入通道的数据，这个过程被称为对齐。<br>3、第二个输入通道的Checkpoint Barrier抵达该算子子任务，该算子子任务执行快照，将状态写入State Backend，然后将ID为n的Checkpoint Barrier向下游所有输出通道广播。<br>4、对于这个算子子任务，快照执行结束，继续处理各个通道中新流入数据，包括刚才缓存起来的数据。<br>5、数据流图中的每个算子子任务都要完成一遍上述的对齐、快照、确认的工作，当最后所有Sink算子确认完成快照之后，说明ID为n的Checkpoint执行结束，Checkpoint Coordinator向State Backend写入一些本次Checkpoint的元数据。</p>
+<h2 id="为什么要对齐"><a href="#为什么要对齐" class="headerlink" title="为什么要对齐"></a>为什么要对齐</h2><p>之所以要进行对齐，主要是为了保证一个Flink作业所有算子的状态是一致的。也就是说，某个ID为n的Checkpoint Barrier从前到后流入所有算子子任务后，所有算子子任务都能将同样的一段数据写入快照。</p>
+<h2 id="快照性能优化方案"><a href="#快照性能优化方案" class="headerlink" title="快照性能优化方案"></a>快照性能优化方案</h2><h3 id="存在问题一："><a href="#存在问题一：" class="headerlink" title="存在问题一："></a>存在问题一：</h3><p>1、每次进行Checkpoint前，都需要暂停处理新流入数据，然后开始执行快照，假如状态比较大，一次快照可能长达几秒甚至几分钟。</p>
+<h3 id="解决方案一："><a href="#解决方案一：" class="headerlink" title="解决方案一："></a>解决方案一：</h3><p>对于这个问题，Flink提供了异步快照（Asynchronous Snapshot）的机制。当实际执行快照时，Flink可以立即向下广播Checkpoint Barrier，表示自己已经执行完自己部分的快照。同时，Flink启动一个后台线程，它创建本地状态的一份拷贝，这个线程用来将本地状态的拷贝同步到State Backend上，一旦数据同步完成，再给Checkpoint Coordinator发送确认信息。拷贝一份数据肯定占用更多内存，这时可以利用写入时复制（Copy-on-Write）的优化策略。Copy-on-Write指：如果这份内存数据没有任何修改，那没必要生成一份拷贝，只需要有一个指向这份数据的指针，通过指针将本地数据同步到State Backend上；如果这份内存数据有一些更新，那再去申请额外的内存空间并维护两份数据，一份是快照时的数据，一份是更新后的数据。</p>
+<h3 id="存在问题二："><a href="#存在问题二：" class="headerlink" title="存在问题二："></a>存在问题二：</h3><p>Checkpoint Barrier对齐时，必须等待所有上游通道都处理完，假如某个上游通道处理很慢，这可能造成整个数据流堵塞。</p>
+<h3 id="解决方案二："><a href="#解决方案二：" class="headerlink" title="解决方案二："></a>解决方案二：</h3><p>对于第二个问题，Flink允许跳过对齐这一步，或者说一个算子子任务不需要等待所有上游通道的Checkpoint Barrier，直接将Checkpoint Barrier广播，执行快照并继续处理后续流入数据。为了保证数据一致性，Flink必须将那些较慢的数据流中的元素也一起快照，一旦重启，这些元素会被重新处理一遍。</p>
+<h2 id="关键点：如何做快照呢？"><a href="#关键点：如何做快照呢？" class="headerlink" title="关键点：如何做快照呢？"></a>关键点：如何做快照呢？</h2><p>1、JobManager向Source Task发送CheckPointTrigger，Source Task会在数据流中安插CheckPoint barrier；<br>2、Source Task自身做快照，并保存到状态后端；<br>3、Source Task将barrier跟数据流一块往下游发送；<br>4、当下游的Operator实例接收到CheckPoint barrier后，对自身做快照<br>5、上述过程中，假设有4个带状态的Operator实例，相应的状态后端就可以想象成填4个格子。整个CheckPoint 的过程可以当做Operator实例填自己格子的过程，Operator实例将自身的状态写到状态后端中相应的格子<br>6、当所有的格子填满可以简单的认为一次完整的CheckPoint做完了</p>
+<h2 id="关键点：整个checkpoint执行过程如下："><a href="#关键点：整个checkpoint执行过程如下：" class="headerlink" title="关键点：整个checkpoint执行过程如下："></a>关键点：整个checkpoint执行过程如下：</h2><p>1、JobManager端的 CheckPointCoordinator向 所有SourceTask发送CheckPointTrigger，Source Task会在数据流中安插CheckPoint barrier<br>2、当task收到所有的barrier后，向自己的下游继续传递barrier，然后自身执行快照，并将自己的状态异步写入到持久化存储中。增量CheckPoint只是把最新的一部分更新写入到 外部存储；为了下游尽快做CheckPoint，所以会先发送barrier到下游，自身再同步进行快照<br>3、当task完成备份后，会将备份数据的地址（state handle）通知给JobManager的CheckPointCoordinator；<br>如果CheckPoint的持续时长超过 了CheckPoint设定的超时时间，CheckPointCoordinator 还没有收集完所有的 State Handle，CheckPointCoordinator就会认为本次CheckPoint失败，会把这次CheckPoint产生的所有 状态数据全部删除。<br>4、 最后 CheckPoint Coordinator 会把整个 StateHandle 封装成 completed CheckPoint Meta，写入到hdfs。</p>
+<h2 id="关键点：什么是barrier对齐"><a href="#关键点：什么是barrier对齐" class="headerlink" title="关键点：什么是barrier对齐"></a>关键点：什么是barrier对齐</h2><p>一旦Operator从输入流接收到CheckPoint barrier n，它就不能处理来自该流的任何数据记录，直到它从其他所有输入接收到barrier n为止。否则，它会混合属于快照n的记录和属于快照n + 1的记录；</p>
+<p>1、接收到barrier n的流暂时被搁置。从这些流接收的记录不会被处理，而是放入输入缓冲区。</p>
+<p>2、虽然数字流对应的barrier已经到达了，但是barrier之后的1、2、3这些数据只能放到buffer中，等待字母流的barrier到达；</p>
+<p>3、一旦最后所有输入流都接收到barrier n，Operator就会把缓冲区中pending（在…等待时期） 的输出数据发出去，然后把CheckPoint barrier n接着往下游发送</p>
+<p>4、这里还会对自身进行快照；<br>之后，Operator将继续处理来自所有输入流的记录，在处理来自流的记录之前先处理来自输入缓冲区的记录。</p>
+<h2 id="什么是barrier不对齐？"><a href="#什么是barrier不对齐？" class="headerlink" title="什么是barrier不对齐？"></a>什么是barrier不对齐？</h2><p>barrier不对齐就是指当还有其他流的barrier还没到达时，为了不影响性能，也不用理会，直接处理barrier之后的数据。等到所有流的barrier的都到达后，就可以对该Operator做CheckPoint了；</p>
+<h4 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h4><p>以上均为Flink内部的精确一次，并非Flink端对端的精确一次<br>Flink要求end to end的精确一次都必须实现TwoPhaseCommitSinkFunction。如果你的chk-100成功了，过了30秒，由于5秒commit一次，所以实际上已经写入了6批数据进入mysql，但是突然程序挂了，从chk100处恢复，这样的话，之前提交的6批数据就会重复写入，所以出现了重复消费。</p>
+<h2 id="关于SavePoint"><a href="#关于SavePoint" class="headerlink" title="关于SavePoint"></a>关于SavePoint</h2><p>Checkpoint只是做容错、故障恢复。而SavePoint可以做很多事情，SavePoint可以说是具有一些额外元数据的检查点。<br>Flink不会自动创建保存点，因此用户（或外部调度程序）必须明确地触发创建操作<br>保存点可以用于：除了故障恢复外，可以有计划的手动备份，更新应用程序、版本迁移、暂停和重启应用等等。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/07/16/Flink-Cheakpoint-%E6%9C%BA%E5%88%B6%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90%E4%B8%8E%E5%8F%82%E6%95%B0%E8%AE%BE%E8%AE%A1/" data-id="ckdh5ox860001tkr1baij7lzr" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-我的第一篇文章" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/07/03/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E6%96%87%E7%AB%A0/" class="article-date">
@@ -87,64 +622,13 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="第一章"><a href="#第一章" class="headerlink" title="第一章"></a>第一章</h2><p>内容</p>
-<p>##第二章</p>
-<p>哈哈</p>
-<p>##参考文献</p>
-<p>copyright xuan</p>
+<h2 id="第二章"><a href="#第二章" class="headerlink" title="第二章"></a>第二章</h2><p>哈哈</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>copyright xuanx</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/07/03/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E6%96%87%E7%AB%A0/" data-id="ckc5tuqco0000egr11cspdge4" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/07/03/hello-world/" class="article-date">
-  <time datetime="2020-07-03T06:01:33.608Z" itemprop="datePublished">2020-07-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/07/03/hello-world/">Hello World</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/07/03/hello-world/" data-id="ckc5tuqcx0001egr13z7m8hbp" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/07/03/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E6%96%87%E7%AB%A0/" data-id="ckdh5ox8e0008tkr1finl1ua7" class="article-share-link">Share</a>
       
       
     </footer>
@@ -172,7 +656,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a></li></ul>
     </div>
   </div>
 
@@ -185,11 +669,23 @@
       <ul>
         
           <li>
-            <a href="/2020/07/03/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E6%96%87%E7%AB%A0/">我的第一篇文章</a>
+            <a href="/2020/08/05/%E6%88%91%E7%9A%84%E7%AC%AC%E4%BA%8C%E7%AF%87%E6%96%87%E7%AB%A0/">我的第二篇文章</a>
           </li>
         
           <li>
-            <a href="/2020/07/03/hello-world/">Hello World</a>
+            <a href="/2020/08/05/%E4%B8%80%E5%91%A8%E7%AE%97%E6%B3%95%E6%80%BB%E7%BB%93/">一周算法总结</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/05/Hadoop%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Hadoop学习笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2020/08/05/Flink%20Checkpoint%E6%9C%80%E6%96%B0%E7%90%86%E8%A7%A3/">Flink Checkpoint最新理解</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/18/Flink-%E6%BA%90%E7%A0%81%EF%BC%9ACheckpoint-%E5%85%83%E6%95%B0%E6%8D%AE%E8%AF%A6%E8%A7%A3/">Flink 源码：Checkpoint 元数据详解</a>
           </li>
         
       </ul>

@@ -5,17 +5,17 @@
   
 
   
-  <title>我的第一篇文章 | Hexo</title>
+  <title>Flink Checkpoint最新理解 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="第一章内容 第二章哈哈 参考文献copyright xuanx">
+  <meta name="description" content="1、flink中的Checkpoint保存的是所有任务 状态 的快照。这个状态是要求所有任务都处理完同一个数据之后的状态 2、flink Checkpoint算法基于Chandy-Lamport算法的分布式快照 3、flink  checkpint重要的概念barrier用于分割不同的checkpoint，对于每个任务而言，收到barrier就意味着要开始做state的保存算法中需要对不同上游分区">
 <meta property="og:type" content="article">
-<meta property="og:title" content="我的第一篇文章">
-<meta property="og:url" content="http://yoursite.com/2020/07/03/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E6%96%87%E7%AB%A0/index.html">
+<meta property="og:title" content="Flink Checkpoint最新理解">
+<meta property="og:url" content="http://yoursite.com/2020/08/05/Flink%20Checkpoint%E6%9C%80%E6%96%B0%E7%90%86%E8%A7%A3/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="第一章内容 第二章哈哈 参考文献copyright xuanx">
+<meta property="og:description" content="1、flink中的Checkpoint保存的是所有任务 状态 的快照。这个状态是要求所有任务都处理完同一个数据之后的状态 2、flink Checkpoint算法基于Chandy-Lamport算法的分布式快照 3、flink  checkpint重要的概念barrier用于分割不同的checkpoint，对于每个任务而言，收到barrier就意味着要开始做state的保存算法中需要对不同上游分区">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2020-07-03T06:15:35.000Z">
-<meta property="article:modified_time" content="2020-08-05T09:13:36.801Z">
+<meta property="article:published_time" content="2020-08-05T08:24:36.010Z">
+<meta property="article:modified_time" content="2020-08-05T08:30:27.033Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -66,10 +66,10 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-我的第一篇文章" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-Flink Checkpoint最新理解" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2020/07/03/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E6%96%87%E7%AB%A0/" class="article-date">
-  <time datetime="2020-07-03T06:15:35.000Z" itemprop="datePublished">2020-07-03</time>
+    <a href="/2020/08/05/Flink%20Checkpoint%E6%9C%80%E6%96%B0%E7%90%86%E8%A7%A3/" class="article-date">
+  <time datetime="2020-08-05T08:24:36.010Z" itemprop="datePublished">2020-08-05</time>
 </a>
     
   </div>
@@ -80,7 +80,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      我的第一篇文章
+      Flink Checkpoint最新理解
     </h1>
   
 
@@ -88,14 +88,16 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="第一章"><a href="#第一章" class="headerlink" title="第一章"></a>第一章</h2><p>内容</p>
-<h2 id="第二章"><a href="#第二章" class="headerlink" title="第二章"></a>第二章</h2><p>哈哈</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>copyright xuanx</p>
+        <p>1、flink中的Checkpoint保存的是所有任务 状态 的快照。<br>这个状态是要求所有任务都处理完同一个数据之后的状态</p>
+<p>2、flink Checkpoint算法<br>基于Chandy-Lamport算法的分布式快照</p>
+<p>3、flink  checkpint重要的概念<br>barrier用于分割不同的checkpoint，对于每个任务而言，收到barrier就意味着要开始做state的保存<br>算法中需要对不同上游分区发来的barrier，进行对齐</p>
+<p>4、checkpoint的存储位置，由state backend决定<br>一般是放在远程持久化存储空间（fs或者是rocksdb）<br>jobManager会触发一次checkpint操作，会把checkpint所有任务状态的拓扑结构保存下来</p>
+<p>5、barrier和watermark类似，都可以看做一个插入数据流中的特殊数据结构<br>barrier在数据处理上跟watermark是两套机制，完全没有关系。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/07/03/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E6%96%87%E7%AB%A0/" data-id="ckdh5ox8e0008tkr1finl1ua7" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/08/05/Flink%20Checkpoint%E6%9C%80%E6%96%B0%E7%90%86%E8%A7%A3/" data-id="ckdh5ox7z0000tkr13he284xl" class="article-share-link">Share</a>
       
       
     </footer>
@@ -104,15 +106,20 @@
     
 <nav id="article-nav">
   
-    <a href="/2020/07/16/Flink-Cheakpoint-%E6%9C%BA%E5%88%B6%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90%E4%B8%8E%E5%8F%82%E6%95%B0%E8%AE%BE%E8%AE%A1/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2020/08/05/Hadoop%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          Flink Cheakpoint 机制原理剖析
+          Hadoop学习笔记
         
       </div>
     </a>
   
+  
+    <a href="/2020/07/18/Flink-%E6%BA%90%E7%A0%81%EF%BC%9ACheckpoint-%E5%85%83%E6%95%B0%E6%8D%AE%E8%AF%A6%E8%A7%A3/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Flink 源码：Checkpoint 元数据详解</div>
+    </a>
   
 </nav>
 

@@ -6,17 +6,17 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Hexo</title>
+  <title>blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
+<meta property="og:title" content="blog">
 <meta property="og:url" content="http://yoursite.com/page/2/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:site_name" content="blog">
 <meta property="og:locale" content="en_US">
-<meta property="article:author" content="John Doe">
+<meta property="article:author" content="lgx">
 <meta name="twitter:card" content="summary">
   
-    <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
+    <link rel="alternative" href="/atom.xml" title="blog" type="application/atom+xml">
   
   
     <link rel="icon" href="/favicon.png">
@@ -46,7 +46,7 @@
 			<img src="" class="js-avatar">
 		</a>
 		<hgroup>
-		  <h1 class="header-author"><a href="/">John Doe</a></h1>
+		  <h1 class="header-author"><a href="/">lgx</a></h1>
 		</hgroup>
 		
 
@@ -104,7 +104,7 @@
 				<img src="" class="js-avatar">
 			</div>
 			<hgroup>
-			  <h1 class="header-author js-header-author">John Doe</h1>
+			  <h1 class="header-author js-header-author">lgx</h1>
 			</hgroup>
 			
 			
@@ -151,6 +151,92 @@
           </div>
           <div id="js-content" class="content-ll">
             
+  
+    <article id="post-Flink-Cheakpoint-机制原理剖析与参数设计" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/16/Flink-Cheakpoint-%E6%9C%BA%E5%88%B6%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90%E4%B8%8E%E5%8F%82%E6%95%B0%E8%AE%BE%E8%AE%A1/">Flink Cheakpoint 机制原理剖析</a>
+    </h1>
+  
+
+        
+        <a href="/2020/07/16/Flink-Cheakpoint-%E6%9C%BA%E5%88%B6%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90%E4%B8%8E%E5%8F%82%E6%95%B0%E8%AE%BE%E8%AE%A1/" class="archive-article-date">
+  	<time datetime="2020-07-16T02:06:36.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-16</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="本文为转载加整理"><a href="#本文为转载加整理" class="headerlink" title="本文为转载加整理"></a>本文为转载加整理</h2><p>转载信息一（写的很好）：<a href="http://www.jianshu.com/p/4d31d6cddc99" target="_blank" rel="noopener">www.jianshu.com/p/4d31d6cddc99</a><br>转载信息二：zhuanlan.zhihu.com/p/104601440</p>
+<h2 id="提出问题"><a href="#提出问题" class="headerlink" title="提出问题"></a>提出问题</h2><p>分布式系统经常出现进程被杀、节点宕机或网络中断等问题，那么本地的状态在遇到故障时如何保证不丢呢？Flink定期保存状态数据到存储上，故障发生后从之前的备份中恢复，整个被称为Checkpoint机制，它为Flink提供了Exactly-Once的投递保障。本文将介绍Flink的Checkpoint机制的原理。本文会使用多个概念：快照（Snapshot）、分布式快照（Distributed Snapshot）、检查点（Checkpoint）等，这些概念均指的是Flink的Checkpoint机制，读者可以将这些概念等同看待。</p>
+<h2 id="什么是barrier"><a href="#什么是barrier" class="headerlink" title="什么是barrier"></a>什么是barrier</h2><p>barrier从Source Task处生成，一直流到Sink Task，期间所有的Task只要碰到barrier，就会触发自身进行快照;<br>Source Task接收到JobManager的编号为chk-100的CheckPoint触发请求后，发现自己恰好接收到kafka offset（0，1000）处的数据，所以会往offset（0，1000）数据之后offset（0，1001）数据之前安插一个barrier，然后自己开始做快照，也就是将offset（0，1000）保存到状态后端chk-100中。然后barrier接着往下游发送，当统计pv的task接收到barrier后，也会暂停处理数据，将自己内存中保存的pv信息（app1，50000）（app2，10000）保存到状态后端chk-100中。OK，flink大概就是通过这个原理来保存快照的;<br>结合案例来讲就是，统计pv的task想对（app1，50000）（app2，10000）做快照，但是如果数据还在处理，可能快照还没保存下来，状态已经变成了（app1，50001）（app2，10001），快照就不准确了，就不能保障Exactly Once了;<br>Exactly Once是指故障恢复后不会出现数据重复。</p>
+<h2 id="Flink分布式快照流程"><a href="#Flink分布式快照流程" class="headerlink" title="Flink分布式快照流程"></a>Flink分布式快照流程</h2><p>首先我们来看一下一个简单的Checkpoint的大致流程：</p>
+<p>1、暂停处理新流入数据，将新数据缓存起来。<br>2、将算子子任务的本地状态数据拷贝到一个远程的持久化存储上。<br>3、继续处理新流入的数据，包括刚才缓存起来的数据。</p>
+<p>首先，Flink的检查点协调器（Checkpoint Coordinator）触发一次Checkpoint（Trigger Checkpoint），这个请求会发送给Source的各个子任务。<br>各Source算子子任务接收到这个Checkpoint请求之后，会将自己的状态写入到状态后端，生成一次快照，并且会向下游广播Checkpoint Barrier。</p>
+<p>Source算子做完快照后，还会给Checkpoint Coodinator发送一个确认，告知自己已经做完了相应的工作。这个确认中包括了一些元数据，其中就包括刚才备份到State Backend的状态句柄，或者说是指向状态的指针。至此，Source完成了一次Checkpoint。跟Watermark的传播一样，一个算子子任务要把Checkpoint Barrier发送给所连接的所有下游算子子任务</p>
+<p>对于下游算子来说，可能有多个与之相连的上游输入，我们将算子之间的边称为通道。Source要将一个ID为n的Checkpoint Barrier向所有下游算子广播，这也意味着下游算子的多个输入里都有同一个Checkpoint Barrier，而且不同输入里Checkpoint Barrier的流入进度可能不同。Checkpoint Barrier传播的过程需要进行对齐（Barrier Alignment）</p>
+<h2 id="Checkpoint-Barrier如何在算子间传播和对齐的呢？"><a href="#Checkpoint-Barrier如何在算子间传播和对齐的呢？" class="headerlink" title="Checkpoint Barrier如何在算子间传播和对齐的呢？"></a>Checkpoint Barrier如何在算子间传播和对齐的呢？</h2><p>1、算子子任务在某个输入通道中收到第一个ID为n的Checkpoint Barrier，但是其他输入通道中ID为n的Checkpoint Barrier还未到达，该算子子任务开始准备进行对齐。<br>2、算子子任务将第一个输入通道的数据缓存下来，同时继续处理其他输入通道的数据，这个过程被称为对齐。<br>3、第二个输入通道的Checkpoint Barrier抵达该算子子任务，该算子子任务执行快照，将状态写入State Backend，然后将ID为n的Checkpoint Barrier向下游所有输出通道广播。<br>4、对于这个算子子任务，快照执行结束，继续处理各个通道中新流入数据，包括刚才缓存起来的数据。<br>5、数据流图中的每个算子子任务都要完成一遍上述的对齐、快照、确认的工作，当最后所有Sink算子确认完成快照之后，说明ID为n的Checkpoint执行结束，Checkpoint Coordinator向State Backend写入一些本次Checkpoint的元数据。</p>
+<h2 id="为什么要对齐"><a href="#为什么要对齐" class="headerlink" title="为什么要对齐"></a>为什么要对齐</h2><p>之所以要进行对齐，主要是为了保证一个Flink作业所有算子的状态是一致的。也就是说，某个ID为n的Checkpoint Barrier从前到后流入所有算子子任务后，所有算子子任务都能将同样的一段数据写入快照。</p>
+<h2 id="快照性能优化方案"><a href="#快照性能优化方案" class="headerlink" title="快照性能优化方案"></a>快照性能优化方案</h2><h3 id="存在问题一："><a href="#存在问题一：" class="headerlink" title="存在问题一："></a>存在问题一：</h3><p>1、每次进行Checkpoint前，都需要暂停处理新流入数据，然后开始执行快照，假如状态比较大，一次快照可能长达几秒甚至几分钟。</p>
+<h3 id="解决方案一："><a href="#解决方案一：" class="headerlink" title="解决方案一："></a>解决方案一：</h3><p>对于这个问题，Flink提供了异步快照（Asynchronous Snapshot）的机制。当实际执行快照时，Flink可以立即向下广播Checkpoint Barrier，表示自己已经执行完自己部分的快照。同时，Flink启动一个后台线程，它创建本地状态的一份拷贝，这个线程用来将本地状态的拷贝同步到State Backend上，一旦数据同步完成，再给Checkpoint Coordinator发送确认信息。拷贝一份数据肯定占用更多内存，这时可以利用写入时复制（Copy-on-Write）的优化策略。Copy-on-Write指：如果这份内存数据没有任何修改，那没必要生成一份拷贝，只需要有一个指向这份数据的指针，通过指针将本地数据同步到State Backend上；如果这份内存数据有一些更新，那再去申请额外的内存空间并维护两份数据，一份是快照时的数据，一份是更新后的数据。</p>
+<h3 id="存在问题二："><a href="#存在问题二：" class="headerlink" title="存在问题二："></a>存在问题二：</h3><p>Checkpoint Barrier对齐时，必须等待所有上游通道都处理完，假如某个上游通道处理很慢，这可能造成整个数据流堵塞。</p>
+<h3 id="解决方案二："><a href="#解决方案二：" class="headerlink" title="解决方案二："></a>解决方案二：</h3><p>对于第二个问题，Flink允许跳过对齐这一步，或者说一个算子子任务不需要等待所有上游通道的Checkpoint Barrier，直接将Checkpoint Barrier广播，执行快照并继续处理后续流入数据。为了保证数据一致性，Flink必须将那些较慢的数据流中的元素也一起快照，一旦重启，这些元素会被重新处理一遍。</p>
+<h2 id="关键点：如何做快照呢？"><a href="#关键点：如何做快照呢？" class="headerlink" title="关键点：如何做快照呢？"></a>关键点：如何做快照呢？</h2><p>1、JobManager向Source Task发送CheckPointTrigger，Source Task会在数据流中安插CheckPoint barrier；<br>2、Source Task自身做快照，并保存到状态后端；<br>3、Source Task将barrier跟数据流一块往下游发送；<br>4、当下游的Operator实例接收到CheckPoint barrier后，对自身做快照<br>5、上述过程中，假设有4个带状态的Operator实例，相应的状态后端就可以想象成填4个格子。整个CheckPoint 的过程可以当做Operator实例填自己格子的过程，Operator实例将自身的状态写到状态后端中相应的格子<br>6、当所有的格子填满可以简单的认为一次完整的CheckPoint做完了</p>
+<h2 id="关键点：整个checkpoint执行过程如下："><a href="#关键点：整个checkpoint执行过程如下：" class="headerlink" title="关键点：整个checkpoint执行过程如下："></a>关键点：整个checkpoint执行过程如下：</h2><p>1、JobManager端的 CheckPointCoordinator向 所有SourceTask发送CheckPointTrigger，Source Task会在数据流中安插CheckPoint barrier<br>2、当task收到所有的barrier后，向自己的下游继续传递barrier，然后自身执行快照，并将自己的状态异步写入到持久化存储中。增量CheckPoint只是把最新的一部分更新写入到 外部存储；为了下游尽快做CheckPoint，所以会先发送barrier到下游，自身再同步进行快照<br>3、当task完成备份后，会将备份数据的地址（state handle）通知给JobManager的CheckPointCoordinator；<br>如果CheckPoint的持续时长超过 了CheckPoint设定的超时时间，CheckPointCoordinator 还没有收集完所有的 State Handle，CheckPointCoordinator就会认为本次CheckPoint失败，会把这次CheckPoint产生的所有 状态数据全部删除。<br>4、 最后 CheckPoint Coordinator 会把整个 StateHandle 封装成 completed CheckPoint Meta，写入到hdfs。</p>
+<h2 id="关键点：什么是barrier对齐"><a href="#关键点：什么是barrier对齐" class="headerlink" title="关键点：什么是barrier对齐"></a>关键点：什么是barrier对齐</h2><p>一旦Operator从输入流接收到CheckPoint barrier n，它就不能处理来自该流的任何数据记录，直到它从其他所有输入接收到barrier n为止。否则，它会混合属于快照n的记录和属于快照n + 1的记录；</p>
+<p>1、接收到barrier n的流暂时被搁置。从这些流接收的记录不会被处理，而是放入输入缓冲区。</p>
+<p>2、虽然数字流对应的barrier已经到达了，但是barrier之后的1、2、3这些数据只能放到buffer中，等待字母流的barrier到达；</p>
+<p>3、一旦最后所有输入流都接收到barrier n，Operator就会把缓冲区中pending（在…等待时期） 的输出数据发出去，然后把CheckPoint barrier n接着往下游发送</p>
+<p>4、这里还会对自身进行快照；<br>之后，Operator将继续处理来自所有输入流的记录，在处理来自流的记录之前先处理来自输入缓冲区的记录。</p>
+<h2 id="什么是barrier不对齐？"><a href="#什么是barrier不对齐？" class="headerlink" title="什么是barrier不对齐？"></a>什么是barrier不对齐？</h2><p>barrier不对齐就是指当还有其他流的barrier还没到达时，为了不影响性能，也不用理会，直接处理barrier之后的数据。等到所有流的barrier的都到达后，就可以对该Operator做CheckPoint了；</p>
+<h4 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h4><p>以上均为Flink内部的精确一次，并非Flink端对端的精确一次<br>Flink要求end to end的精确一次都必须实现TwoPhaseCommitSinkFunction。如果你的chk-100成功了，过了30秒，由于5秒commit一次，所以实际上已经写入了6批数据进入mysql，但是突然程序挂了，从chk100处恢复，这样的话，之前提交的6批数据就会重复写入，所以出现了重复消费。</p>
+<h2 id="关于SavePoint"><a href="#关于SavePoint" class="headerlink" title="关于SavePoint"></a>关于SavePoint</h2><p>Checkpoint只是做容错、故障恢复。而SavePoint可以做很多事情，SavePoint可以说是具有一些额外元数据的检查点。<br>Flink不会自动创建保存点，因此用户（或外部调度程序）必须明确地触发创建操作<br>保存点可以用于：除了故障恢复外，可以有计划的手动备份，更新应用程序、版本迁移、暂停和重启应用等等。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/07/16/Flink-Cheakpoint-%E6%9C%BA%E5%88%B6%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90%E4%B8%8E%E5%8F%82%E6%95%B0%E8%AE%BE%E8%AE%A1/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
   
     <article id="post-我的第一篇文章" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
@@ -231,7 +317,7 @@
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2020 John Doe
+    		&copy; 2020 lgx
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
